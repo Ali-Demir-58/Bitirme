@@ -6,7 +6,15 @@ const path = require('path');
 const app = express();
 app.use(cors());
 
+// Statik dosyaları yayınla: index.html, main.js, analysis.js, resources, data vs.
+app.use(express.static(__dirname));
+
 const FILE_PATH = path.join(__dirname, 'data', 'data.xlsx');
+
+// Ana sayfa isteğinde index.html göster
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 function parseNumber(value) {
     if (value === null || value === undefined || value === '') return null;
@@ -95,6 +103,19 @@ app.get('/api/market-data', (req, res) => {
         console.error('Excel okunamadı:', err);
         res.status(500).json({ error: 'Excel okunamadı' });
     }
+});
+
+// Diğer HTML sayfaları için direkt erişim istersen:
+app.get('/analysis', (req, res) => {
+    res.sendFile(path.join(__dirname, 'analysis.html'));
+});
+
+app.get('/guide', (req, res) => {
+    res.sendFile(path.join(__dirname, 'guide.html'));
+});
+
+app.get('/iletisim', (req, res) => {
+    res.sendFile(path.join(__dirname, 'iletisim.html'));
 });
 
 const PORT = process.env.PORT || 3000;
