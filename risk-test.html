@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Risk Profili Testi - Finansal Analiz Platformu</title>
+    <meta name="description"
+        content="Kişisel yatırım risk profilinizi belirleyin ve size uygun portföy dağılımını görüntüleyin.">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="icon" type="image/png" href="resources/favicon.png">
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a365d 0%, #4299e1 100%);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #d69e2e, #f6ad55);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .risk-card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(66, 153, 225, 0.18);
+            transition: all 0.25s ease;
+        }
+
+        .risk-option {
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+
+        .risk-option:hover {
+            background-color: #f9fafb;
+            border-color: #93c5fd;
+        }
+
+        .risk-option.selected {
+            background-color: #dbeafe;
+            border-color: #2563eb;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] .mobile-menu-panel {
+            display: block;
+        }
+
+        .mobile-menu-panel {
+            display: none;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800 min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div class="flex justify-between items-center h-16">
+                <a href="index.html" class="flex items-center space-x-3">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-lg sm:text-xl font-bold text-gray-900">Finansal Analiz</span>
+                </a>
+
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="index.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Anasayfa</a>
+                    <a href="analysis.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Analiz</a>
+                    <a href="guide.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Rehber</a>
+                    <a href="iletisim.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">İletişim</a>
+                </div>
+
+                <details class="md:hidden relative">
+                    <summary class="list-none cursor-pointer p-2 text-gray-700 rounded-lg hover:bg-gray-100"
+                        aria-label="Menüyü aç">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </summary>
+
+                    <div
+                        class="mobile-menu-panel absolute right-0 mt-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                        <a href="index.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50">Anasayfa</a>
+                        <a href="analysis.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50">Analiz</a>
+                        <a href="guide.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50">Rehber</a>
+                        <a href="iletisim.html" class="block px-5 py-3 text-gray-700 hover:bg-gray-50">İletişim</a>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <section class="pt-28 pb-14 sm:pt-32 sm:pb-20 gradient-bg">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl sm:text-5xl font-bold text-white mb-5">
+                Risk Profili <span class="text-gradient">Testi</span>
+            </h1>
+            <p class="text-base sm:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
+                Yatırım tercihlerinizi, risk algınızı ve vade beklentinizi analiz ederek size uygun risk profilini
+                belirleyin.
+            </p>
+        </div>
+    </section>
+
+    <!-- Test Content -->
+    <main class="py-12 sm:py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <div id="loading-box" class="risk-card rounded-2xl p-6 sm:p-8 shadow text-center">
+                <p class="text-gray-600">Kontrol ediliyor...</p>
+            </div>
+
+            <section id="test-box" class="risk-card rounded-2xl p-6 sm:p-8 shadow hidden">
+                <div class="mb-8">
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 mb-4">
+                        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900">Yatırımcı Risk Profilinizi Belirleyin
+                        </h2>
+                        <span class="text-sm text-gray-500">
+                            Soru <span id="current-question">1</span> / <span id="total-questions">10</span>
+                        </span>
+                    </div>
+
+                    <div class="w-full bg-gray-200 rounded-full h-3">
+                        <div id="progress-bar" class="bg-blue-600 h-3 rounded-full transition-all" style="width: 10%;">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="question-area">
+                    <!-- JS ile doldurulacak -->
+                </div>
+
+                <div class="flex justify-between gap-4 mt-8">
+                    <button type="button" id="prev-btn" onclick="previousRiskQuestion()"
+                        class="w-1/2 sm:w-auto px-5 sm:px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-400 transition-all"
+                        disabled>
+                        Önceki
+                    </button>
+
+                    <button type="button" id="next-btn" onclick="nextRiskQuestion()"
+                        class="w-1/2 sm:w-auto px-5 sm:px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all">
+                        Sonraki
+                    </button>
+                </div>
+            </section>
+
+            <section id="result-box" class="risk-card rounded-2xl p-6 sm:p-8 shadow hidden">
+                <div class="text-center mb-8">
+                    <div id="result-emoji" class="text-6xl mb-4">📊</div>
+                    <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-3">Risk Profiliniz Hazır</h2>
+                    <p class="text-gray-600">Test sonucunuz kaydedildi ve analiz sayfanızda kullanılacak.</p>
+                </div>
+
+                <div class="bg-blue-50 rounded-xl p-6 mb-6">
+                    <h3 id="profile-type" class="text-2xl font-bold text-blue-900 mb-2">Dengeli Profil</h3>
+                    <p id="profile-description" class="text-blue-800 leading-relaxed"></p>
+                    <p class="text-sm text-blue-700 mt-4">
+                        Skor: <span id="profile-score" class="font-bold"></span>
+                    </p>
+                </div>
+
+                <div class="bg-white border border-gray-200 rounded-xl p-6 mb-8">
+                    <h3 class="text-xl font-bold text-gray-900 mb-5">Önerilen Dağılım</h3>
+                    <div id="allocation-list" class="space-y-4"></div>
+                </div>
+
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button type="button" onclick="restartRiskTest()"
+                        class="px-6 py-3 bg-gray-200 text-gray-800 rounded-lg font-semibold hover:bg-gray-300 transition-all">
+                        Testi Tekrar Çöz
+                    </button>
+
+                    <a href="analysis.html"
+                        class="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-all text-center">
+                        Analiz Sayfasına Git
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12 mt-4">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-lg sm:text-xl font-bold">Finansal Analiz Platformu</span>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    © 2024 Finansal Analiz Platformu. Tüm hakları saklıdır.
+                </p>
+                <p class="text-sm text-gray-500">
+                    Bu test yatırım tavsiyesi değildir. Sonuçlar yalnızca bilgilendirme ve eğitim amaçlıdır.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script src="auth.js"></script>
+    <script src="risk-test.js"></script>
+
+</body>
+
+</html>
