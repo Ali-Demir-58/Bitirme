@@ -1,4 +1,4 @@
-// Finansal Analiz Platformu - Analysis JavaScript
+// Finansal Analiz Platformu - Analysis JavaScript with Supabase Persistence
 
 // =========================
 // GLOBAL STATE
@@ -9,49 +9,69 @@ let simulationChart = null;
 let riskChart = null;
 let expenseChart = null;
 
+let currentUser = null;
 let marketStocks = [];
 let marketGoldPrice = null;
 
 let portfolioData = {
     totalValue: 0,
     monthlyReturn: 0,
-    riskScore: 6.2,
-    diversification: 85,
-    holdings: [
-        { symbol: 'TUPRS', name: 'Tüpraş', amount: 200, buyPrice: 312.50, currentPrice: 312.50 },
-        { symbol: 'GOLD', name: 'Gram Altın', amount: 20, buyPrice: 2756, currentPrice: 2756 }
-    ]
+    riskScore: 0,
+    diversification: 0,
+    holdings: []
 };
 
 let budgetData = {
     income: 25000,
-    expenses: [
-        { category: 'Konut', description: 'Ev kira ve faturaları', amount: 8500 },
-        { category: 'Gıda', description: 'Market ve restoran', amount: 4200 },
-        { category: 'Ulaşım', description: 'Araç ve toplu taşıma', amount: 1800 },
-        { category: 'Eğlence', description: 'Sinema, tiyatro, vs.', amount: 1200 },
-        { category: 'Diğer', description: 'Giyim, sağlık, vs.', amount: 3050 }
-    ]
+    expenses: []
 };
 
 // =========================
 // INIT
 // =========================
 document.addEventListener('DOMContentLoaded', async function () {
+    currentUser = await getLoggedInUser();
+
+    if (!currentUser) {
+        window.location.href = 'login.html';
+        return;
+    }
+
     await loadMarketDataForAnalysis();
+    await loadUserFinancialData();
+
     refreshPortfolioPrices();
 
     initializeCharts();
     initializeInteractions();
+
     updateHoldingsTable();
     updatePortfolioDisplay();
-    updateBudgetDashboard();
+    updateBudgetDashboard(false);
 
     openTabFromHash();
 
-    // Grafiklerin mobilde doğru ölçü alması için kısa gecikme
     setTimeout(resizeAllCharts, 250);
 });
+
+// =========================
+// AUTH
+// =========================
+async function getLoggedInUser() {
+    if (typeof supabaseClient === 'undefined') {
+        console.error('Supabase client bulunamadı.');
+        return null;
+    }
+
+    const { data, error } = await supabaseClient.auth.getSession();
+
+    if (error) {
+        console.error('Session okunamadı:', error);
+        return null;
+    }
+
+    return data.session?.user || null;
+}
 
 // =========================
 // SAFE HELPERS
@@ -87,6 +107,140 @@ function resizeAllCharts() {
             chart.resize();
         }
     });
+}
+
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+
+    const bgColor =
+        type === 'success'
+            ? 'bg-green-500'
+            : type === 'error'
+                ? 'bg-red-500'
+                : 'bg-blue-500';
+
+    notification.className =
+        `fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 3000);
+}
+
+// =========================
+// SUPABASE USER DATA
+// =========================
+async function loadUserFinancialData() {
+    await Promise.all([
+        loadUserPortfolio(),
+        loadUserExpenses(),
+        loadUserSettings()
+    ]);
+}
+
+async function loadUserPortfolio() {
+    const { data, error } = await supabaseClient
+        .from('portfolios')
+        .select('id, symbol, name, amount, buy_price, created_at')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Portföy verisi alınamadı:', error);
+        portfolioData.holdings = [];
+        return;
+    }
+
+    portfolioData.holdings = (data || []).map(item => ({
+        id: item.id,
+        symbol: item.symbol,
+        name: item.name || item.symbol,
+        amount: Number(item.amount),
+        buyPrice: Number(item.buy_price),
+        currentPrice: Number(item.buy_price)
+    }));
+}
+
+async function loadUserExpenses() {
+    const { data, error } = await supabaseClient
+        .from('expenses')
+        .select('id, category, description, amount, created_at')
+        .eq('user_id', currentUser.id)
+        .order('created_at', { ascending: true });
+
+    if (error) {
+        console.error('Gider verisi alınamadı:', error);
+        budgetData.expenses = [];
+        return;
+    }
+
+    budgetData.expenses = (data || []).map(item => ({
+        id: item.id,
+        category: item.category,
+        description: item.description || item.category,
+        amount: Number(item.amount)
+    }));
+}
+
+async function loadUserSettings() {
+    const { data, error } = await supabaseClient
+        .from('user_settings')
+        .select('monthly_income')
+        .eq('user_id', currentUser.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Kullanıcı ayarları alınamadı:', error);
+        return;
+    }
+
+    if (!data) {
+        const { error: insertError } = await supabaseClient
+            .from('user_settings')
+            .insert({
+                user_id: currentUser.id,
+                monthly_income: 25000
+            });
+
+        if (insertError) {
+            console.error('Varsayılan kullanıcı ayarı oluşturulamadı:', insertError);
+        }
+
+        budgetData.income = 25000;
+    } else {
+        budgetData.income = Number(data.monthly_income || 25000);
+    }
+
+    const incomeInput = getEl('monthly-income-input');
+    if (incomeInput) {
+        incomeInput.value = budgetData.income;
+    }
+}
+
+async function saveMonthlyIncomeToSupabase() {
+    if (!currentUser) return;
+
+    const { error } = await supabaseClient
+        .from('user_settings')
+        .upsert({
+            user_id: currentUser.id,
+            monthly_income: budgetData.income,
+            updated_at: new Date().toISOString()
+        }, {
+            onConflict: 'user_id'
+        });
+
+    if (error) {
+        console.error('Gelir bilgisi kaydedilemedi:', error);
+        showNotification('Gelir bilgisi kaydedilemedi.', 'error');
+        return;
+    }
+
+    showNotification('Gelir bilgisi kaydedildi.', 'success');
 }
 
 // =========================
@@ -126,7 +280,6 @@ function isGoldSymbol(symbol) {
 
 function findMarketStock(symbol) {
     const cleanSymbol = normalizeSymbol(symbol);
-
     return marketStocks.find(item => normalizeSymbol(item.symbol) === cleanSymbol);
 }
 
@@ -228,10 +381,15 @@ function initializePortfolioCharts() {
         name: holding.symbol
     }));
 
+    const displayData = pieData.length
+        ? pieData
+        : [{ value: 1, name: 'Veri Yok' }];
+
     pieChart.setOption({
         tooltip: {
             trigger: 'item',
             formatter: function (params) {
+                if (params.name === 'Veri Yok') return 'Henüz yatırım eklenmedi.';
                 return `${params.name}: ${formatTL(params.value, 2)} (${params.percent}%)`;
             }
         },
@@ -267,7 +425,7 @@ function initializePortfolioCharts() {
             labelLine: {
                 show: false
             },
-            data: pieData
+            data: displayData
         }]
     });
 
@@ -275,7 +433,6 @@ function initializePortfolioCharts() {
 }
 
 function initializeSimulationChart() {
-    // Simülasyon grafiği runSimulation() çalışınca oluşur.
     if (simulationChart) {
         simulationChart.resize();
     }
@@ -404,6 +561,17 @@ function updateHoldingsTable() {
 
     tbody.innerHTML = '';
 
+    if (!portfolioData.holdings.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="py-6 px-4 text-center text-gray-500">
+                    Henüz yatırım eklenmedi.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
     portfolioData.holdings.forEach(holding => {
         const currentValue = holding.amount * holding.currentPrice;
         const buyValue = holding.amount * holding.buyPrice;
@@ -430,7 +598,7 @@ function updateHoldingsTable() {
                 (${profit >= 0 ? '+' : ''}${profitPercent}%)
             </td>
             <td class="text-center py-3 px-4 whitespace-nowrap">
-                <button onclick="sellInvestment('${holding.symbol}')" class="text-red-600 hover:text-red-800 font-medium">Sat</button>
+                <button onclick="sellInvestment('${holding.id}')" class="text-red-600 hover:text-red-800 font-medium">Sat</button>
             </td>
         `;
 
@@ -439,7 +607,7 @@ function updateHoldingsTable() {
 }
 
 // =========================
-// ADD / SELL INVESTMENT
+// ADD / SELL INVESTMENT - SUPABASE
 // =========================
 function addInvestment() {
     const stockOptions = marketStocks.map(stock => `
@@ -522,43 +690,50 @@ async function saveInvestment() {
         return;
     }
 
-    let currentPrice = price;
     let assetName = symbol;
     let finalSymbol = symbol;
 
     if (isGoldSymbol(symbol)) {
         finalSymbol = 'GOLD';
-        currentPrice = marketGoldPrice || price;
         assetName = 'Gram Altın';
     } else {
         const marketStock = findMarketStock(symbol);
-        currentPrice = marketStock?.last ? Number(marketStock.last) : price;
         assetName = marketStock?.name || symbol;
     }
 
-    portfolioData.holdings.push({
-        symbol: finalSymbol,
-        name: assetName,
-        amount,
-        buyPrice: price,
-        currentPrice
-    });
+    const { error } = await supabaseClient
+        .from('portfolios')
+        .insert({
+            user_id: currentUser.id,
+            symbol: finalSymbol,
+            name: assetName,
+            amount: amount,
+            buy_price: price
+        });
 
+    if (error) {
+        console.error('Yatırım kaydedilemedi:', error);
+        showNotification('Yatırım kaydedilemedi.', 'error');
+        return;
+    }
+
+    await loadUserPortfolio();
     refreshPortfolioPrices();
+
     updateHoldingsTable();
     updatePortfolioDisplay();
     initializePortfolioCharts();
 
     closeModal();
-    showNotification('Yatırım başarıyla eklendi!', 'success');
+    showNotification('Yatırım başarıyla kaydedildi.', 'success');
 }
 
-function sellInvestment(symbol) {
-    const holding = portfolioData.holdings.find(h => h.symbol === symbol);
+async function sellInvestment(holdingId) {
+    const holding = portfolioData.holdings.find(h => h.id === holdingId);
 
     if (!holding) return;
 
-    const input = prompt(`${symbol} için kaç adet satmak istiyorsunuz?\nMevcut adet: ${holding.amount}`);
+    const input = prompt(`${holding.symbol} için kaç adet satmak istiyorsunuz?\nMevcut adet: ${holding.amount}`);
 
     if (input === null) return;
 
@@ -575,16 +750,41 @@ function sellInvestment(symbol) {
     }
 
     if (sellAmount === holding.amount) {
-        portfolioData.holdings = portfolioData.holdings.filter(h => h !== holding);
+        const { error } = await supabaseClient
+            .from('portfolios')
+            .delete()
+            .eq('id', holding.id)
+            .eq('user_id', currentUser.id);
+
+        if (error) {
+            console.error('Yatırım silinemedi:', error);
+            showNotification('Yatırım silinemedi.', 'error');
+            return;
+        }
     } else {
-        holding.amount -= sellAmount;
+        const newAmount = holding.amount - sellAmount;
+
+        const { error } = await supabaseClient
+            .from('portfolios')
+            .update({ amount: newAmount })
+            .eq('id', holding.id)
+            .eq('user_id', currentUser.id);
+
+        if (error) {
+            console.error('Yatırım güncellenemedi:', error);
+            showNotification('Yatırım güncellenemedi.', 'error');
+            return;
+        }
     }
+
+    await loadUserPortfolio();
+    refreshPortfolioPrices();
 
     updateHoldingsTable();
     updatePortfolioDisplay();
     initializePortfolioCharts();
 
-    showNotification('Satış başarılı!', 'success');
+    showNotification('Satış bilgisi kaydedildi.', 'success');
 }
 
 // =========================
@@ -971,7 +1171,7 @@ function updateRiskAllocationChart(allocations) {
 }
 
 // =========================
-// BUDGET
+// BUDGET - SUPABASE
 // =========================
 function addExpense() {
     const modal = createModal('Yeni Gider Ekle', `
@@ -1015,7 +1215,7 @@ function addExpense() {
     document.body.appendChild(modal);
 }
 
-function saveExpense() {
+async function saveExpense() {
     const category = getEl('expense-category')?.value;
     const description = getEl('expense-description')?.value || category;
     const amount = parseFloat(getEl('expense-amount')?.value);
@@ -1025,14 +1225,29 @@ function saveExpense() {
         return;
     }
 
-    budgetData.expenses.push({ category, description, amount });
+    const { error } = await supabaseClient
+        .from('expenses')
+        .insert({
+            user_id: currentUser.id,
+            category,
+            description,
+            amount
+        });
+
+    if (error) {
+        console.error('Gider kaydedilemedi:', error);
+        showNotification('Gider kaydedilemedi.', 'error');
+        return;
+    }
+
+    await loadUserExpenses();
 
     closeModal();
-    updateBudgetDashboard();
-    showNotification('Gider başarıyla eklendi!', 'success');
+    updateBudgetDashboard(false);
+    showNotification('Gider başarıyla kaydedildi.', 'success');
 }
 
-function updateBudgetDashboard() {
+async function updateBudgetDashboard(shouldSaveIncome = true) {
     const incomeInput = getEl('monthly-income-input');
 
     if (incomeInput) {
@@ -1058,6 +1273,10 @@ function updateBudgetDashboard() {
 
     updateExpenseChart();
     updateBudgetList();
+
+    if (shouldSaveIncome) {
+        await saveMonthlyIncomeToSupabase();
+    }
 }
 
 function updateBudgetList() {
@@ -1065,6 +1284,15 @@ function updateBudgetList() {
     if (!container) return;
 
     container.innerHTML = '';
+
+    if (!budgetData.expenses.length) {
+        container.innerHTML = `
+            <div class="p-4 bg-gray-50 rounded-lg text-gray-500 text-center">
+                Henüz gider eklenmedi.
+            </div>
+        `;
+        return;
+    }
 
     budgetData.expenses.forEach((item, index) => {
         const incomeRate = budgetData.income > 0
@@ -1088,7 +1316,7 @@ function updateBudgetList() {
                     ${formatTL(item.amount)}
                 </div>
 
-                <button onclick="removeExpense(${index})"
+                <button onclick="removeExpense('${item.id}')"
                     class="text-red-500 hover:text-red-700 font-bold text-lg">
                     ✕
                 </button>
@@ -1099,14 +1327,26 @@ function updateBudgetList() {
     });
 }
 
-function removeExpense(index) {
+async function removeExpense(expenseId) {
     const confirmDelete = confirm('Bu gideri silmek istediğine emin misin?');
     if (!confirmDelete) return;
 
-    budgetData.expenses.splice(index, 1);
+    const { error } = await supabaseClient
+        .from('expenses')
+        .delete()
+        .eq('id', expenseId)
+        .eq('user_id', currentUser.id);
 
-    updateBudgetDashboard();
-    showNotification('Gider silindi', 'success');
+    if (error) {
+        console.error('Gider silinemedi:', error);
+        showNotification('Gider silinemedi.', 'error');
+        return;
+    }
+
+    await loadUserExpenses();
+
+    updateBudgetDashboard(false);
+    showNotification('Gider silindi.', 'success');
 }
 
 function updateExpenseChart() {
@@ -1130,10 +1370,15 @@ function updateExpenseChart() {
         value
     }));
 
+    const displayData = chartData.length
+        ? chartData
+        : [{ name: 'Veri Yok', value: 1 }];
+
     chart.setOption({
         tooltip: {
             trigger: 'item',
             formatter: function (params) {
+                if (params.name === 'Veri Yok') return 'Henüz gider eklenmedi.';
                 return `${params.name}: ${formatTL(params.value)} (${params.percent}%)`;
             }
         },
@@ -1147,7 +1392,7 @@ function updateExpenseChart() {
             type: 'pie',
             radius: window.innerWidth < 768 ? ['35%', '62%'] : ['40%', '70%'],
             center: window.innerWidth < 768 ? ['50%', '45%'] : ['55%', '50%'],
-            data: chartData
+            data: displayData
         }]
     });
 
@@ -1155,7 +1400,7 @@ function updateExpenseChart() {
 }
 
 // =========================
-// MODAL / NOTIFICATION
+// MODAL
 // =========================
 function createModal(title, content) {
     const modal = document.createElement('div');
@@ -1179,36 +1424,11 @@ function closeModal() {
     if (modal) modal.remove();
 }
 
-function showNotification(message, type = 'info') {
-    const notification = document.createElement('div');
-
-    const bgColor =
-        type === 'success'
-            ? 'bg-green-500'
-            : type === 'error'
-                ? 'bg-red-500'
-                : 'bg-blue-500';
-
-    notification.className =
-        `fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
-
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    setTimeout(() => {
-        notification.remove();
-    }, 3000);
-}
-
 // =========================
 // INTERACTIONS
 // =========================
 function initializeInteractions() {
-    window.addEventListener('resize', function () {
-        resizeAllCharts();
-    });
-
+    window.addEventListener('resize', resizeAllCharts);
     window.addEventListener('hashchange', openTabFromHash);
 }
 
