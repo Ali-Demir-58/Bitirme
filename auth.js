@@ -30,8 +30,27 @@ async function initializeAuth() {
         path.includes('analysis.html') ||
         path.endsWith('/analysis');
 
+    const isRiskTestPage =
+        path.includes('risk-test.html') ||
+        path.endsWith('/risk-test');
+
     if (isAnalysisPage && !currentUser) {
         window.location.href = 'login.html';
+        return;
+    }
+
+    if (isRiskTestPage && !currentUser) {
+        window.location.href = 'login.html';
+        return;
+    }
+
+    if (isAnalysisPage && currentUser) {
+        const hasRiskProfile = await checkUserRiskProfile(currentUser.id);
+
+        if (!hasRiskProfile) {
+            window.location.href = 'risk-test.html';
+            return;
+        }
     }
 }
 
@@ -106,6 +125,21 @@ async function getCurrentUser() {
     }
 
     return data.session?.user || null;
+}
+
+async function checkUserRiskProfile(userId) {
+    const { data, error } = await supabaseClient
+        .from('risk_profiles')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Risk profili kontrol edilemedi:', error);
+        return false;
+    }
+
+    return !!data;
 }
 
 window.logoutUser = logoutUser;
