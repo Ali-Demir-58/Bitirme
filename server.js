@@ -41,6 +41,10 @@ app.get('/register', (req, res) => {
     res.sendFile(path.join(__dirname, 'register.html'));
 });
 
+app.get('/risk-test', (req, res) => {
+    res.sendFile(path.join(__dirname, 'risk-test.html'));
+});
+
 // =========================
 // EXCEL PARSE HELPERS
 // =========================

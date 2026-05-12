@@ -173,8 +173,24 @@
             status.className = 'mt-6 p-4 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200';
             status.textContent = 'Giriş başarılı. Analiz sayfasına yönlendiriliyorsunuz...';
 
-            setTimeout(() => {
-                window.location.href = 'analysis.html';
+            setTimeout(async () => {
+                const { data: profileData, error: profileError } = await supabaseClient
+                    .from('risk_profiles')
+                    .select('id')
+                    .eq('user_id', data.user.id)
+                    .maybeSingle();
+
+                if (profileError) {
+                    console.error('Risk profili kontrol edilemedi:', profileError);
+                    window.location.href = 'risk-test.html';
+                    return;
+                }
+
+                if (!profileData) {
+                    window.location.href = 'risk-test.html';
+                } else {
+                    window.location.href = 'analysis.html';
+                }
             }, 900);
         }
     </script>

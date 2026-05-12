@@ -9,34 +9,96 @@ let riskAnswers = [];
 
 // =========================
 // RISK TEST QUESTIONS
-// index.html/main.js içindeki risk testi sorularıyla aynı tutuldu.
 // =========================
 const riskQuestions = [
     {
-        question: "Yatırım yapma süreniz ne kadar?",
-        options: [
-            "3 yıldan az",
-            "3-6 yıl arası",
-            "6-10 yıl arası",
-            "10 yıldan fazla"
+        question: '1. Yatırım yaparken temel önceliğiniz hangisidir?',
+        answers: [
+            { text: 'Anaparamı her ne olursa olsun korumak.', score: 1 },
+            { text: 'Enflasyonun biraz üzerinde, düşük riskli getiri sağlamak.', score: 2 },
+            { text: 'Orta vadede sermaye büyümesi ve düzenli gelir elde etmek.', score: 3 },
+            { text: 'Yüksek risk alarak maksimum sermaye artışı sağlamak.', score: 4 }
         ]
     },
     {
-        question: "Finansal yatırım bilginiz nasıl?",
-        options: [
-            "Hiç yok",
-            "Çok az",
-            "Makul düzeyde",
-            "Oldukça bilgiliyim"
+        question: '2. 100.000 TL yatırımınız bir ay içinde 80.000 TL’ye düşerse ne yaparsınız?',
+        answers: [
+            { text: 'Daha fazla kaybetmemek için tüm yatırımı satarım.', score: 1 },
+            { text: 'Endişelenirim ve bir kısmını güvenli varlıklara kaydırırım.', score: 2 },
+            { text: 'Piyasanın düzelmesini beklerim.', score: 3 },
+            { text: 'Fiyatlar düştüğü için ek alım yaparım.', score: 4 }
         ]
     },
     {
-        question: "100.000 TL'niz olsa hangi yatırımı tercih edersiniz?",
-        options: [
-            "%3 kazanç garanti",
-            "%10 kazanç veya %3 kayıp",
-            "%25 kazanç veya %10 kayıp",
-            "%50 kazanç veya %20 kayıp"
+        question: '3. Bu yatırımı hangi zaman dilimi için planlıyorsunuz?',
+        answers: [
+            { text: '1 yıldan az.', score: 1 },
+            { text: '1 - 3 yıl arası.', score: 2 },
+            { text: '3 - 7 yıl arası.', score: 3 },
+            { text: '10 yıl ve üzeri.', score: 4 }
+        ]
+    },
+    {
+        question: '4. Acil durumda kenarda ne kadar nakitiniz var?',
+        answers: [
+            { text: 'Hiç yok.', score: 1 },
+            { text: '1 - 2 aylık giderim kadar.', score: 2 },
+            { text: '3 - 6 aylık giderim kadar.', score: 3 },
+            { text: '1 yıldan fazla yetecek nakitim var.', score: 4 }
+        ]
+    },
+    {
+        question: '5. Aşağıdaki senaryolardan hangisi size daha uygun?',
+        answers: [
+            { text: '%5 kesin kazanç / %0 kayıp ihtimali.', score: 1 },
+            { text: '%12 beklenen kazanç / %5 olası kayıp.', score: 2 },
+            { text: '%25 beklenen kazanç / %15 olası kayıp.', score: 3 },
+            { text: '%50 beklenen kazanç / %35 olası kayıp.', score: 4 }
+        ]
+    },
+    {
+        question: '6. Finansal piyasalar hakkındaki bilginizi nasıl tanımlarsınız?',
+        answers: [
+            { text: 'Hiç bilgim yok.', score: 1 },
+            { text: 'Temel kavramları biliyorum.', score: 2 },
+            { text: 'Piyasa mekanizmalarını ve riskleri iyi anlıyorum.', score: 3 },
+            { text: 'Profesyonel düzeyde bilgim ve tecrübem var.', score: 4 }
+        ]
+    },
+    {
+        question: '7. Aylık geliriniz ne kadar düzenli?',
+        answers: [
+            { text: 'Çok değişken.', score: 1 },
+            { text: 'Sabit ama ucu ucuna yetiyor.', score: 2 },
+            { text: 'Sabit ve her ay tasarruf yapabiliyorum.', score: 3 },
+            { text: 'Yüksek ve birden fazla gelir kanalım var.', score: 4 }
+        ]
+    },
+    {
+        question: '8. Yatırım tutarı toplam birikiminizin ne kadarını oluşturuyor?',
+        answers: [
+            { text: 'Neredeyse tamamını.', score: 1 },
+            { text: 'Yarısından fazlasını.', score: 2 },
+            { text: 'Makul bir kısmını.', score: 3 },
+            { text: 'Çok küçük bir kısmını.', score: 4 }
+        ]
+    },
+    {
+        question: '9. Enflasyon ortamında alım gücünüzün düşmesi sizi ne kadar rahatsız eder?',
+        answers: [
+            { text: 'Hiç rahatsız etmez, param azalmasın yeter.', score: 1 },
+            { text: 'Biraz rahatsız eder ama risk almaktan iyidir.', score: 2 },
+            { text: 'Rahatsız eder, makul risk alırım.', score: 3 },
+            { text: 'Çok rahatsız eder, agresif getiri ararım.', score: 4 }
+        ]
+    },
+    {
+        question: '10. Geçmiş yatırım kararlarınızda en çok hangisini yaşadınız?',
+        answers: [
+            { text: 'Kaybetme korkusuyla erken satış yaptım.', score: 1 },
+            { text: 'Genelde istikrarlı ürünleri seçtim.', score: 2 },
+            { text: 'Bazen riskli işlemlere girdim.', score: 3 },
+            { text: 'Büyük riskler aldım; bazen çok kazandım, bazen kaybettim.', score: 4 }
         ]
     }
 ];
@@ -101,20 +163,20 @@ function loadRiskQuestion() {
     questionArea.innerHTML = `
         <div>
             <h3 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">
-                ${currentRiskQuestionIndex + 1}. ${question.question}
+                ${question.question}
             </h3>
 
             <div class="space-y-3">
-                ${question.options.map((option, index) => `
+                ${question.answers.map((answer, index) => `
                     <label class="risk-option flex items-start gap-3 p-4 rounded-lg cursor-pointer">
                         <input 
                             type="radio" 
                             name="risk-answer" 
                             value="${index}" 
                             class="mt-1 shrink-0"
-                            ${riskAnswers[currentRiskQuestionIndex] === index ? 'checked' : ''}
+                            ${riskAnswers[currentRiskQuestionIndex]?.answerIndex === index ? 'checked' : ''}
                         >
-                        <span class="text-gray-700">${option}</span>
+                        <span class="text-gray-700">${answer.text}</span>
                     </label>
                 `).join('')}
             </div>
@@ -123,8 +185,14 @@ function loadRiskQuestion() {
 
     document.querySelectorAll('input[name="risk-answer"]').forEach(input => {
         input.addEventListener('change', function () {
-            const selectedValue = parseInt(this.value);
-            riskAnswers[currentRiskQuestionIndex] = selectedValue;
+            const selectedIndex = parseInt(this.value);
+            const selectedAnswer = question.answers[selectedIndex];
+
+            riskAnswers[currentRiskQuestionIndex] = {
+                answerIndex: selectedIndex,
+                score: selectedAnswer.score,
+                text: selectedAnswer.text
+            };
 
             document.querySelectorAll('.risk-option').forEach(option => {
                 option.classList.remove('selected');
@@ -142,9 +210,9 @@ function loadRiskQuestion() {
 function restoreSelectedRiskOption() {
     const selectedAnswer = riskAnswers[currentRiskQuestionIndex];
 
-    if (selectedAnswer === undefined) return;
+    if (!selectedAnswer) return;
 
-    const selectedInput = document.querySelector(`input[name="risk-answer"][value="${selectedAnswer}"]`);
+    const selectedInput = document.querySelector(`input[name="risk-answer"][value="${selectedAnswer.answerIndex}"]`);
 
     if (!selectedInput) return;
 
@@ -186,7 +254,7 @@ function updateRiskButtons() {
 // QUESTION NAVIGATION
 // =========================
 function nextRiskQuestion() {
-    if (riskAnswers[currentRiskQuestionIndex] === undefined) {
+    if (!riskAnswers[currentRiskQuestionIndex]) {
         alert('Lütfen bir cevap seçin.');
         return;
     }
@@ -228,54 +296,63 @@ function scrollToRiskTestTop() {
 // RESULT CALCULATION
 // =========================
 async function finishRiskTest() {
-    const totalScore = riskAnswers.reduce((sum, answer) => sum + Number(answer || 0), 0);
+    const totalScore = riskAnswers.reduce((sum, answer) => {
+        return sum + Number(answer?.score || 0);
+    }, 0);
+
     const result = getRiskProfileResult(totalScore);
 
-    await saveRiskProfile(result, totalScore);
+    const saved = await saveRiskProfile(result, totalScore);
+
+    if (!saved) return;
+
     showRiskResult(result, totalScore);
 }
 
 function getRiskProfileResult(totalScore) {
-    if (totalScore <= 4) {
+    if (totalScore <= 18) {
         return {
-            profileType: 'Korumacı (Temkinli)',
+            profileType: 'Korumacı Profil',
             emoji: '🛡️',
-            description: 'Düşük risk toleransına sahip, istikrarlı getiriyi tercih eden yatırımcı profili.',
-            allocationText: 'Vadeli Mevduat: %60, DİBS: %25, Altın: %10, Hisse: %5',
+            description: 'Riskten kaçınan, anaparasını korumayı ve daha istikrarlı getirileri önceleyen yatırımcı profilidir. Bu profil için düşük dalgalanmalı ve likiditesi yüksek varlıklar daha uygundur.',
             allocation: {
-                'Vadeli Mevduat': 60,
-                'DİBS': 25,
-                'Altın': 10,
-                'Hisse': 5
+                'Nakit / Mevduat': 45,
+                'Tahvil / Fon': 30,
+                'Altın': 15,
+                'Hisse Senedi': 10,
+                'Döviz': 0,
+                'Kripto / Yüksek Risk': 0
             }
         };
     }
 
-    if (totalScore <= 8) {
+    if (totalScore <= 30) {
         return {
-            profileType: 'Ilımlı (Dengeli)',
+            profileType: 'Dengeli Profil',
             emoji: '⚖️',
-            description: 'Orta risk toleransına sahip, dengeli getiri-risk profili arayan yatırımcı.',
-            allocationText: 'Hisse: %40, Vadeli Mevduat: %30, Altın: %20, DİBS: %10',
+            description: 'Risk ve getiri arasında denge kurmaya çalışan, kontrollü biçimde büyüme hedefleyen yatırımcı profilidir. Bu profil için farklı varlık sınıflarına yayılmış dengeli bir portföy daha uygundur.',
             allocation: {
-                'Hisse': 40,
-                'Vadeli Mevduat': 30,
+                'Hisse Senedi': 35,
+                'Tahvil / Fon': 25,
                 'Altın': 20,
-                'DİBS': 10
+                'Nakit / Mevduat': 10,
+                'Döviz': 10,
+                'Kripto / Yüksek Risk': 0
             }
         };
     }
 
     return {
-        profileType: 'Cesur (Atak)',
+        profileType: 'Atak Profil',
         emoji: '🚀',
-        description: 'Yüksek risk toleransına sahip, maksimum getiri hedefleyen yatırımcı profili.',
-        allocationText: 'Hisse: %70, Altın: %15, Vadeli Mevduat: %10, DİBS: %5',
+        description: 'Yüksek getiri hedefiyle daha fazla dalgalanmayı ve kayıp riskini tolere edebilen yatırımcı profilidir. Bu profil için büyüme odaklı varlıklar ağırlık kazanabilir.',
         allocation: {
-            'Hisse': 70,
+            'Hisse Senedi': 55,
+            'Tahvil / Fon': 10,
             'Altın': 15,
-            'Vadeli Mevduat': 10,
-            'DİBS': 5
+            'Nakit / Mevduat': 5,
+            'Döviz': 10,
+            'Kripto / Yüksek Risk': 5
         }
     };
 }
@@ -284,7 +361,7 @@ function getRiskProfileResult(totalScore) {
 // SUPABASE SAVE
 // =========================
 async function saveRiskProfile(result, totalScore) {
-    if (!riskUser) return;
+    if (!riskUser) return false;
 
     const { error } = await supabaseClient
         .from('risk_profiles')
@@ -302,8 +379,10 @@ async function saveRiskProfile(result, totalScore) {
     if (error) {
         console.error('Risk profili kaydedilemedi:', error);
         alert('Risk profili kaydedilemedi. Lütfen tekrar deneyin.');
-        return;
+        return false;
     }
+
+    return true;
 }
 
 // =========================
@@ -316,7 +395,7 @@ function showRiskResult(result, totalScore) {
     setText('result-emoji', result.emoji);
     setText('profile-type', result.profileType);
     setText('profile-description', result.description);
-    setText('profile-score', `${totalScore} / 9`);
+    setText('profile-score', `${totalScore} / 40`);
 
     renderAllocationList(result.allocation);
 

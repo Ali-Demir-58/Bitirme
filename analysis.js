@@ -8,6 +8,7 @@ let portfolioChart = null;
 let simulationChart = null;
 let riskChart = null;
 let expenseChart = null;
+let userRiskProfile = null;
 
 let analysisUser = null;
 let marketStocks = [];
@@ -39,6 +40,9 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     await loadMarketDataForAnalysis();
     await loadUserFinancialData();
+    await loadUserRiskProfile();
+    renderRiskProfileCard();
+    applyRiskProfileToRiskInputs();
 
     refreshPortfolioPrices();
 
@@ -1430,6 +1434,157 @@ function closeModal() {
 function initializeInteractions() {
     window.addEventListener('resize', resizeAllCharts);
     window.addEventListener('hashchange', openTabFromHash);
+}
+
+// =========================
+// USER RISK PROFILE
+// =========================
+
+async function loadUserRiskProfile() {
+    if (!analysisUser) return;
+
+    const { data, error } = await supabaseClient
+        .from('risk_profiles')
+        .select('score, profile_type, description, allocation, updated_at, created_at')
+        .eq('user_id', analysisUser.id)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Risk profili alınamadı:', error);
+        userRiskProfile = null;
+        return;
+    }
+
+    if (!data) {
+        window.location.href = 'risk-test.html';
+        return;
+    }
+
+    userRiskProfile = data;
+}
+
+function renderRiskProfileCard() {
+    if (!userRiskProfile) return;
+
+    const profileType = userRiskProfile.profile_type || 'Profil Bulunamadı';
+    const description = userRiskProfile.description || 'Risk profili açıklaması bulunamadı.';
+    const score = userRiskProfile.score ?? '--';
+    const allocation = userRiskProfile.allocation || {};
+    const updatedAt = userRiskProfile.updated_at || userRiskProfile.created_at;
+
+    const emoji = getRiskProfileEmoji(profileType);
+
+    safeText('risk-profile-emoji', emoji);
+    safeText('risk-profile-type', profileType);
+    safeText('risk-profile-description', description);
+    safeText('risk-profile-score', `${score} / 40`);
+    safeText('risk-profile-date', formatRiskProfileDate(updatedAt));
+
+    renderRiskProfileAllocation(allocation);
+}
+
+function getRiskProfileEmoji(profileType) {
+    const text = String(profileType || '').toLowerCase();
+
+    if (text.includes('korumacı')) return '🛡️';
+    if (text.includes('dengeli')) return '⚖️';
+    if (text.includes('atak')) return '🚀';
+
+    return '📊';
+}
+
+function formatRiskProfileDate(dateValue) {
+    if (!dateValue) return '--';
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) return '--';
+
+    return date.toLocaleDateString('tr-TR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+    });
+}
+
+function renderRiskProfileAllocation(allocation) {
+    const container = document.getElementById('risk-profile-allocation');
+
+    if (!container) return;
+
+    const entries = Object.entries(allocation || {});
+
+    if (!entries.length) {
+        container.innerHTML = `
+            <div class="text-sm text-gray-500">
+                Önerilen dağılım bilgisi bulunamadı.
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = entries.map(([asset, percent]) => `
+        <div>
+            <div class="flex justify-between items-center mb-1">
+                <span class="text-sm font-medium text-gray-700">${asset}</span>
+                <span class="text-sm font-bold text-blue-600">%${percent}</span>
+            </div>
+
+            <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="bg-blue-600 h-2.5 rounded-full" style="width: ${Number(percent) || 0}%;"></div>
+            </div>
+        </div>
+    `).join('');
+}
+
+function applyRiskProfileToRiskInputs() {
+    if (!userRiskProfile || !userRiskProfile.allocation) return;
+
+    const mappedAllocation = mapRiskProfileAllocationToInputs(userRiskProfile.allocation);
+
+    Object.entries(mappedAllocation).forEach(([inputId, value]) => {
+        const input = document.getElementById(inputId);
+
+        if (input) {
+            input.value = value;
+        }
+    });
+
+    if (typeof calculateRiskProfile === 'function') {
+        calculateRiskProfile();
+    }
+}
+
+function mapRiskProfileAllocationToInputs(allocation) {
+    const result = {
+        'risk-stock': 0,
+        'risk-gold': 0,
+        'risk-fx': 0,
+        'risk-cash': 0,
+        'risk-bond': 0,
+        'risk-crypto': 0
+    };
+
+    Object.entries(allocation).forEach(([asset, value]) => {
+        const key = String(asset).toLowerCase();
+        const percent = Number(value) || 0;
+
+        if (key.includes('hisse')) {
+            result['risk-stock'] += percent;
+        } else if (key.includes('altın')) {
+            result['risk-gold'] += percent;
+        } else if (key.includes('döviz')) {
+            result['risk-fx'] += percent;
+        } else if (key.includes('nakit') || key.includes('mevduat')) {
+            result['risk-cash'] += percent;
+        } else if (key.includes('tahvil') || key.includes('fon') || key.includes('dibs')) {
+            result['risk-bond'] += percent;
+        } else if (key.includes('kripto') || key.includes('yüksek')) {
+            result['risk-crypto'] += percent;
+        }
+    });
+
+    return result;
 }
 
 // =========================
