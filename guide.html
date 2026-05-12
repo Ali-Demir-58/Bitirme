@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yatırım Rehberi - Kişisel Finans Yönetimi</title>
+    <meta name="description" content="Türk finans piyasalarında yatırım rehberi. BIST, hisse senetleri, fonlar, altın ve döviz yatırımı hakkında kapsamlı bilgiler.">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="resources/favicon.png">
+    
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a365d 0%, #4299e1 100%);
+        }
+        
+        .guide-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(66, 153, 225, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .guide-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(26, 54, 93, 0.1);
+        }
+        
+        .text-gradient {
+            background: linear-gradient(135deg, #d69e2e, #f6ad55);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .accordion-content.active {
+            max-height: 1000px;
+        }
+        
+        .quiz-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .quiz-option:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .quiz-option.selected {
+            background-color: #dbeafe;
+            border-color: #3b82f6;
+        }
+        
+        .quiz-option.correct {
+            background-color: #dcfce7;
+            border-color: #10b981;
+        }
+        
+        .quiz-option.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-xl font-bold text-gray-900">Finansal Analiz</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Anasayfa</a>
+                    <a href="analysis.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Analiz</a>
+                    <a href="#" class="text-blue-600 font-medium">Rehber</a>
+                    <a href="#contact" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">İletişim</a>
+                </div>
+                <button class="md:hidden p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="pt-24 pb-12 gradient-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div>
+                    <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                        Yatırım <span class="text-gradient">Rehberi</span>
+                    </h1>
+                    <p class="text-xl text-blue-100 mb-8">
+                        Türk finans piyasalarında başarılı yatırım yapmak için ihtiyacınız olan tüm bilgiler ve stratejiler
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4">
+                        <button onclick="startQuiz()" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg transition-all">
+                            Bilgi Testi Başlat
+                        </button>
+                        <button onclick="scrollToContent()" class="border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-3 px-6 rounded-lg transition-all">
+                            Rehberi İncele
+                        </button>
+                    </div>
+                </div>
+                <div class="flex justify-center">
+                    <img src="resources/financial-education.png" alt="Finansal Eğitim" class="w-full max-w-md rounded-xl shadow-lg">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quick Navigation -->
+    <section class="py-8 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="scrollToSection('basics')" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all">
+                    Temel Bilgiler
+                </button>
+                <button onclick="scrollToSection('instruments')" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
+                    Yatırım Araçları
+                </button>
+                <button onclick="scrollToSection('strategies')" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
+                    Stratejiler
+                </button>
+                <button onclick="scrollToSection('quiz')" class="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all">
+                    Bilgi Testi
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Basic Concepts Section -->
+    <section id="basics" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Finansal Okuryazarlık Temelleri</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Yatırım yapmadan önce bilmeniz gereken temel finansal kavramlar ve ilkeler
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">💰</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Bileşik Faiz</h3>
+                    <p class="text-gray-600 mb-4">
+                        Einstein'in "insanlığın en büyük buluşu" olarak nitelendirdiği bileşik faiz, yatırımlarınızın zamanla katlanarak büyümesini sağlar.
+                    </p>
+                    <div class="bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm text-blue-800">
+                            <strong>Örnek:</strong> ₺10.000 yatırım, yıllık %10 getiriyle 10 yılda ₺25.937 olur.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">📈</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Risk-Getiri İlişkisi</h3>
+                    <p class="text-gray-600 mb-4">
+                        Yüksek getiri potansiyeli genellikle yüksek riskle birlikte gelir. Her yatırımcının risk toleransı farklıdır.
+                    </p>
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <p class="text-sm text-green-800">
+                            <strong>Bilgi:</strong> Risk profilinizi belirleyerek size uygun yatırım araçlarını seçebilirsiniz.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">🔄</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Çeşitlendirme</h3>
+                    <p class="text-gray-600 mb-4">
+                        Tüm yatırımlarınızı tek bir araçta toplamak yerine farklı varlıklara dağıtmak riski azaltır.
+                    </p>
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <p class="text-sm text-yellow-800">
+                            <strong>İpucu:</strong> Hisse, tahvil, altın ve döviz gibi farklı varlıklardan oluşan bir portföy oluşturun.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">📊</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Enflasyon Etkisi</h3>
+                    <p class="text-gray-600 mb-4">
+                        Enflasyon, paranın satın alma gücünü zamanla azaltır. Yatırımlarınızın enflasyonun üzerinde getiri sağlaması gerekir.
+                    </p>
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <p class="text-sm text-red-800">
+                            <strong>2024:</strong> Türkiye'de yıllık enflasyon %65-70 seviyelerinde seyretmiştir.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">⏰</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Zamanlama</h3>
+                    <p class="text-gray-600 mb-4">
+                        Piyasa zamanlaması yerine zaman içinde düzenli yatırım yapmak (dolar maliyet ortalaması) daha etkilidir.
+                    </p>
+                    <div class="bg-purple-50 p-4 rounded-lg">
+                        <p class="text-sm text-purple-800">
+                            <strong>Strateji:</strong> Her ay düzenli olarak küçük tutarlarda yatırım yapın.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-4xl mb-4">🎯</div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-4">Hedef Belirleme</h3>
+                    <p class="text-gray-600 mb-4">
+                        Net finansal hedefler belirlemek, uygun yatırım stratejisi seçmenize yardımcı olur.
+                    </p>
+                    <div class="bg-indigo-50 p-4 rounded-lg">
+                        <p class="text-sm text-indigo-800">
+                            <strong>Hedef:</strong> Kısa, orta ve uzun vadeli hedeflerinizi belirleyin.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment Instruments Section -->
+    <section id="instruments" class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Yatırım Araçları</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Türk finans piyasalarında bulunan temel yatırım araçları ve özellikleri
+                </p>
+            </div>
+            
+            <!-- Accordion for Investment Instruments -->
+            <div class="max-w-4xl mx-auto space-y-4">
+                
+                <!-- BIST Hisse Senetleri -->
+                <div class="guide-card rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion('bist-stocks')" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-3xl">📈</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">BIST Hisse Senetleri</h3>
+                                <p class="text-gray-600">Türk şirketlerine ortak olma fırsatı</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 transform transition-transform" id="bist-stocks-icon">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="bist-stocks-content" class="accordion-content">
+                        <div class="px-8 pb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Avantajlar</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Yüksek getiri potansiyeli</li>
+                                        <li>• Likidite (kolay alım-satım)</li>
+                                        <li>• Temettü geliri</li>
+                                        <li>• Enflasyona karşı koruma</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Riskler</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Piyasa volatilitesi</li>
+                                        <li>• Şirket performansı riski</li>
+                                        <li>• Sektör riskleri</li>
+                                        <li>• Ekonomik döngülere bağlılık</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-blue-900 mb-2">2024 Performansı</h4>
+                                <p class="text-blue-800 text-sm">
+                                    BIST 100 endeksi yılbaşından bu yana %34,94 oranında yükseldi. Ancak enflasyon etkisiyle reel getiri negatif oldu.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Altın -->
+                <div class="guide-card rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion('gold')" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-3xl">🥇</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Altın</h3>
+                                <p class="text-gray-600">Güvenli liman yatırımı</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 transform transition-transform" id="gold-icon">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="gold-content" class="accordion-content">
+                        <div class="px-8 pb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Avantajlar</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Enflasyona karşı koruma</li>
+                                        <li>• Kriz dönemlerinde güvenli liman</li>
+                                        <li>• Dünya çapında kabul görür</li>
+                                        <li>• Fiziki ve dijital alım seçenekleri</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Dikkat Edilecekler</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Saklama maliyetleri</li>
+                                        <li>• Fiyat dalgalanmaları</li>
+                                        <li>• Fiziki alımda güvenlik</li>
+                                        <li>• Alım-satım farkı (spread)</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-yellow-50 rounded-lg">
+                                <h4 class="font-semibold text-yellow-900 mb-2">2024 Performansı</h4>
+                                <p class="text-yellow-800 text-sm">
+                                    Altın, 2024'te %12,11 reel getiriyle enflasyon karşısında kazandıran tek yatırım aracı oldu.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Döviz -->
+                <div class="guide-card rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion('fx')" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-3xl">💵</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Döviz (USD/EUR)</h3>
+                                <p class="text-gray-600">Para birimleri arası farktan yararlanma</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 transform transition-transform" id="fx-icon">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="fx-content" class="accordion-content">
+                        <div class="px-8 pb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Avantajlar</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Likidite</li>
+                                        <li>• Düşük işlem maliyeti</li>
+                                        <li>• 24/5 işlem saatleri</li>
+                                        <li>• Kaldıraç kullanımı</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Riskler</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Yüksek volatilite</li>
+                                        <li>• Merkez bankası politikaları</li>
+                                        <li>• Jeopolitik riskler</li>
+                                        <li>• Kaldıraç riski</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-green-50 rounded-lg">
+                                <h4 class="font-semibold text-green-900 mb-2">2024 Performansı</h4>
+                                <p class="text-green-800 text-sm">
+                                    USD/TL %18,3, EUR/TL %19,6 oranında reel kayıp yaşattı. Enflasyon karşısında korunma sağlamadı.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tahvil ve Bonolar -->
+                <div class="guide-card rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion('bonds')" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-3xl">📜</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Tahvil ve Bonolar</h3>
+                                <p class="text-gray-600">Devlet ve özel sektör borçlanma araçları</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 transform transition-transform" id="bonds-icon">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="bonds-content" class="accordion-content">
+                        <div class="px-8 pb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Avantajlar</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Sabit getiri</li>
+                                        <li>• Düşük risk (özellikle devlet tahvilleri)</li>
+                                        <li>• Likidite</li>
+                                        <li>• Çeşitlendirme fırsatı</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Dikkat Edilecekler</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Faiz oranı riski</li>
+                                        <li>• Kredi riski</li>
+                                        <li>• Enflasyon riski</li>
+                                        <li>• Vade uyumu</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-red-50 rounded-lg">
+                                <h4 class="font-semibold text-red-900 mb-2">2024 Performansı</h4>
+                                <p class="text-red-800 text-sm">
+                                    Devlet iç borçlanma senetleri (DİBS) %14,2 oranında reel kayıp yaşattı.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Yatırım Fonları -->
+                <div class="guide-card rounded-xl overflow-hidden">
+                    <button onclick="toggleAccordion('funds')" class="w-full px-8 py-6 text-left flex justify-between items-center hover:bg-gray-50">
+                        <div class="flex items-center space-x-4">
+                            <span class="text-3xl">🎯</span>
+                            <div>
+                                <h3 class="text-xl font-bold text-gray-900">Yatırım Fonları</h3>
+                                <p class="text-gray-600">Profesyonel yönetim ve çeşitlendirme</p>
+                            </div>
+                        </div>
+                        <svg class="w-6 h-6 transform transition-transform" id="funds-icon">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </button>
+                    <div id="funds-content" class="accordion-content">
+                        <div class="px-8 pb-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Avantajlar</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Profesyonel yönetim</li>
+                                        <li>• Çeşitlendirme</li>
+                                        <li>• Düşük başlangıç tutarı</li>
+                                        <li>• Likidite</li>
+                                    </ul>
+                                </div>
+                                <div>
+                                    <h4 class="font-semibold text-gray-900 mb-3">Maliyetler</h4>
+                                    <ul class="space-y-2 text-gray-600">
+                                        <li>• Yönetim ücreti</li>
+                                        <li>• Alım-satım farkı</li>
+                                        <li>• Performans ücreti</li>
+                                        <li>• Diğer giderler</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                                <h4 class="font-semibold text-blue-900 mb-2">Fon Türleri</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
+                                    <div>
+                                        <strong>Hisse Fonları:</strong> Yüksek risk, yüksek getiri potansiyeli
+                                    </div>
+                                    <div>
+                                        <strong>Borçlanma Fonları:</strong> Orta risk, sabit getiri odaklı
+                                    </div>
+                                    <div>
+                                        <strong>Karma Fonlar:</strong> Dengeli risk-getiri profili
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment Strategies Section -->
+    <section id="strategies" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Yatırım Stratejileri</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    Farklı risk profillerine göre uygulanabilecek etkili yatırım stratejileri
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Conservative Strategy -->
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-4">🛡️</div>
+                        <h3 class="text-2xl font-bold text-gray-900">Korumacı Strateji</h3>
+                        <p class="text-gray-600">Düşük risk, istikrarlı getiri</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Risk Seviyesi</span>
+                            <div class="flex space-x-1">
+                                <div class="w-3 h-3 bg-green-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                                <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Beklenen Yıllık Getiri</span>
+                            <span class="font-bold text-green-600">%6-10</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Yatırım Ufku</span>
+                            <span class="font-bold text-gray-600">1-3 Yıl</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Portföy Dağılımı</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Vadeli Mevduat</span>
+                                <span class="font-medium">%40</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Devlet Tahvilleri</span>
+                                <span class="font-medium">%30</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Altın</span>
+                                <span class="font-medium">%20</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nakit</span>
+                                <span class="font-medium">%10</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-green-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-green-900 mb-2">Kimler İçin Uygun?</h5>
+                        <p class="text-green-800 text-sm">
+                            Emeklilik dönemine yaklaşanlar, düşük risk tolereansına sahip yatırımcılar, kısa vadeli hedefleri olanlar.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Moderate Strategy -->
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-4">⚖️</div>
+                        <h3 class="text-2xl font-bold text-gray-900">Dengeli Strateji</h3>
+                        <p class="text-gray-600">Orta risk, dengeli getiri</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Risk Seviyesi</span>
+                            <div class="flex space-x-1">
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-gray-300 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Beklenen Yıllık Getiri</span>
+                            <span class="font-bold text-yellow-600">%10-15</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Yatırım Ufku</span>
+                            <span class="font-bold text-gray-600">3-7 Yıl</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Portföy Dağılımı</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Hisse Senetleri</span>
+                                <span class="font-medium">%40</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Tahvil/Bono</span>
+                                <span class="font-medium">%25</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Altın</span>
+                                <span class="font-medium">%20</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Döviz</span>
+                                <span class="font-medium">%10</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nakit</span>
+                                <span class="font-medium">%5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-yellow-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-yellow-900 mb-2">Kimler İçin Uygun?</h5>
+                        <p class="text-yellow-800 text-sm">
+                            Orta yaş grubu yatırımcılar, dengeli risk-getiri arayanlar, orta vadeli hedefleri olanlar.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Aggressive Strategy -->
+                <div class="guide-card rounded-xl p-8">
+                    <div class="text-center mb-6">
+                        <div class="text-4xl mb-4">🚀</div>
+                        <h3 class="text-2xl font-bold text-gray-900">Atak Strateji</h3>
+                        <p class="text-gray-600">Yüksek risk, yüksek getiri potansiyeli</p>
+                    </div>
+                    
+                    <div class="space-y-4 mb-6">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Risk Seviyesi</span>
+                            <div class="flex space-x-1">
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                                <div class="w-3 h-3 bg-red-500 rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Beklenen Yıllık Getiri</span>
+                            <span class="font-bold text-red-600">%15+</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700">Yatırım Ufku</span>
+                            <span class="font-bold text-gray-600">7+ Yıl</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-6">
+                        <h4 class="font-semibold text-gray-900 mb-3">Portföy Dağılımı</h4>
+                        <div class="space-y-2">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Hisse Senetleri</span>
+                                <span class="font-medium">%60</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Yurt Dışı Hisse</span>
+                                <span class="font-medium">%15</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Altın</span>
+                                <span class="font-medium">%10</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Döviz</span>
+                                <span class="font-medium">%10</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Nakit</span>
+                                <span class="font-medium">%5</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-red-50 p-4 rounded-lg">
+                        <h5 class="font-semibold text-red-900 mb-2">Kimler İçin Uygun?</h5>
+                        <p class="text-red-800 text-sm">
+                            Genç yatırımcılar, yüksek risk tolereansına sahip olanlar, uzun vadeli büyüme hedefi olanlar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Knowledge Quiz Section -->
+    <section id="quiz" class="py-20 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Finansal Bilgi Testi</h2>
+                <p class="text-xl text-gray-600">
+                    Yatırım bilginizi test edin, eksiklerinizi tespit edin
+                </p>
+            </div>
+            
+            <div id="quiz-container" class="guide-card rounded-xl p-8">
+                <div id="quiz-start" class="text-center">
+                    <div class="text-6xl mb-6">🧠</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Hazır mısınız?</h3>
+                    <p class="text-gray-600 mb-8">
+                        10 soruluk bu test, finansal okuryazarlık seviyenizi değerlendirecektir. 
+                        Soruları dikkatlice okuyun ve size en uygun cevabı seçin.
+                    </p>
+                    <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-all">
+                        Testi Başlat
+                    </button>
+                </div>
+                
+                <div id="quiz-questions" class="hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-900">Soru <span id="current-question">1</span> / 10</h3>
+                        <div class="text-sm text-gray-600">
+                            Skor: <span id="quiz-score" class="font-bold text-blue-600">0</span>
+                        </div>
+                    </div>
+                    
+                    <div id="question-content">
+                        <!-- Questions will be loaded here -->
+                    </div>
+                    
+                    <div class="flex justify-between mt-8">
+                        <button id="prev-btn" onclick="previousQuestion()" class="px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-400 transition-all" disabled>
+                            Önceki
+                        </button>
+                        <button id="next-btn" onclick="nextQuestion()" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all">
+                            Sonraki
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="quiz-results" class="hidden text-center">
+                    <div class="text-6xl mb-6" id="result-emoji">🎉</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Test Tamamlandı!</h3>
+                    <div class="text-4xl font-bold text-blue-600 mb-4" id="final-score">8/10</div>
+                    <p class="text-gray-600 mb-8" id="result-message">
+                        Tebrikler! Finansal okuryazarlık seviyeniz oldukça iyi.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                        <button onclick="restartQuiz()" class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all">
+                            Testi Tekrarla
+                        </button>
+                        <button onclick="shareResults()" class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all">
+                            Sonucu Paylaş
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-xl font-bold">Finansal Analiz Platformu</span>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    © 2024 Finansal Analiz Platformu. Tüm hakları saklıdır.
+                </p>
+                <p class="text-sm text-gray-500">
+                    Bu platform yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="guide.js"></script>
+</body>
+</html>

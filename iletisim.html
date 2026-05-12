@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>İletişim</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-50">
+
+    <!-- NAVBAR -->
+    <header class="bg-white shadow">
+        <div class="max-w-6xl mx-auto px-4 py-4 flex justify-between">
+            <h1 class="text-xl font-bold">Finans App</h1>
+
+            <nav class="space-x-6">
+                <a href="index.html" class="text-gray-600 hover:text-blue-600">Ana Sayfa</a>
+                <a href="analysis.html" class="text-gray-600 hover:text-blue-600">Analiz</a>
+                <a href="iletisim.html" class="text-blue-600 font-semibold">İletişim</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- CONTENT -->
+    <section class="max-w-4xl mx-auto mt-12 bg-white p-8 rounded-xl shadow">
+        <h2 class="text-2xl font-bold mb-6">Bize Ulaşın</h2>
+
+        <form class="space-y-4" onsubmit="sendMessage(event)">
+            <input type="text" id="name" placeholder="Adınız" class="w-full border p-3 rounded-lg">
+
+            <input type="email" id="email" placeholder="E-posta" class="w-full border p-3 rounded-lg">
+
+            <textarea id="message" rows="5" placeholder="Mesajınız" class="w-full border p-3 rounded-lg"></textarea>
+
+            <button type="submit" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700">
+                Gönder
+            </button>
+        </form>
+    </section>
+
+    <script>
+        function sendMessage(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const message = document.getElementById('message').value;
+
+            if (!name || !email || !message) {
+                alert("Lütfen tüm alanları doldur.");
+                return;
+            }
+
+            alert("Mesaj gönderildi (şimdilik fake 😄)");
+
+            // form temizle
+            document.getElementById('name').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('message').value = '';
+        }
+    </script>
+
+</body>
+
+</html>

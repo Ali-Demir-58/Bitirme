@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finansal Analiz - Kişisel Finans Yönetimi</title>
+    <meta name="description"
+        content="Detaylı finansal analiz araçları, portföy simülasyonları ve risk değerlendirmeleri. Türk finans piyasalarında veri odaklı yatırım kararları.">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="resources/favicon.png">
+
+    <!-- Custom Styles -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a365d 0%, #4299e1 100%);
+        }
+
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .analysis-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(66, 153, 225, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .analysis-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(26, 54, 93, 0.1);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, #d69e2e, #f6ad55);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .tab-button {
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: linear-gradient(135deg, #1a365d, #4299e1);
+            color: white;
+        }
+
+        .metric-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(255, 255, 255, 0.7));
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .simulation-container {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-xl font-bold text-gray-900">Finansal Analiz</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <a href="index.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Anasayfa</a>
+                    <a href="#" class="text-blue-600 font-medium">Analiz</a>
+                    <a href="guide.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Rehber</a>
+                    <a href="iletisim.html"
+                        class="text-gray-700 hover:text-blue-600 font-medium transition-colors">İletişim</a>
+                </div>
+                <button class="md:hidden p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Header Section -->
+    <section class="pt-24 pb-12 gradient-bg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-6">
+                Detaylı <span class="text-gradient">Finansal Analiz</span>
+            </h1>
+            <p class="text-xl text-blue-100 max-w-3xl mx-auto">
+                Veri odaklı yatırım kararları alın, portföyünüzü optimize edin ve finansal hedeflerinize ulaşın
+            </p>
+        </div>
+    </section>
+
+    <!-- Analysis Tabs -->
+    <section class="py-8 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-wrap justify-center space-x-4">
+                <button onclick="switchTab('portfolio')" id="tab-portfolio"
+                    class="tab-button active px-6 py-3 rounded-lg font-medium">
+                    Portföy Analizi
+                </button>
+                <button onclick="switchTab('simulation')" id="tab-simulation"
+                    class="tab-button px-6 py-3 rounded-lg font-medium bg-gray-100 text-gray-700">
+                    Yatırım Simülasyonu
+                </button>
+                <button onclick="switchTab('risk')" id="tab-risk"
+                    class="tab-button px-6 py-3 rounded-lg font-medium bg-gray-100 text-gray-700">
+                    Risk Değerlendirmesi
+                </button>
+                <button onclick="switchTab('budget')" id="tab-budget"
+                    class="tab-button px-6 py-3 rounded-lg font-medium bg-gray-100 text-gray-700">
+                    Bütçe Takibi
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Portfolio Analysis Tab -->
+    <section id="content-portfolio" class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Portfolio Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="metric-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-gray-900" id="total-value">₺125.450</div>
+                    <div class="text-sm text-gray-600">Toplam Değer</div>
+                    <div class="text-sm text-green-600 font-medium" id="total-change">+7,68%</div>
+                </div>
+                <div class="metric-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-gray-900" id="monthly-return">+₺8.950</div>
+                    <div class="text-sm text-gray-500">Toplam Kar/Zarar</div>
+                    <div class="text-xs text-blue-600">Alış fiyatına göre</div>
+                </div>
+                <div class="metric-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-gray-900" id="risk-score">6,2</div>
+                    <div class="text-sm text-gray-600">Risk Skoru</div>
+                    <div class="text-sm text-yellow-600 font-medium">Orta Risk</div>
+                </div>
+                <div class="metric-card rounded-xl p-6 text-center">
+                    <div class="text-3xl font-bold text-gray-900" id="diversification">85%</div>
+                    <div class="text-sm text-gray-600">Çeşitlendirme</div>
+                    <div class="text-sm text-green-600 font-medium">İyi</div>
+                </div>
+            </div>
+
+            <!-- Portfolio Composition -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="grid grid-cols-1 gap-8 mb-8">
+                    <div class="analysis-card rounded-xl p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-6">Portföy Dağılımı</h3>
+                        <div id="portfolio-pie-chart" class="h-80"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Holdings Table -->
+            <div class="analysis-card rounded-xl p-6">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-xl font-bold text-gray-900">Mevcut Yatırımlar</h3>
+                    <button onclick="addInvestment()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all">
+                        Yatırım Ekle
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead>
+                            <tr class="border-b border-gray-200">
+                                <th class="text-left py-3 px-4 font-semibold text-gray-700">Varlık</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700">Miktar</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700">Alış Fiyatı</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700">Güncel Fiyat</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700">Değer</th>
+                                <th class="text-right py-3 px-4 font-semibold text-gray-700">Kar/Zarar</th>
+                                <th class="text-center py-3 px-4 font-semibold text-gray-700">İşlem</th>
+                            </tr>
+                        </thead>
+                        <tbody id="holdings-table">
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <span class="font-medium text-gray-900">ASELS</span>
+                                        <span class="ml-2 text-sm text-gray-500">Aselsan</span>
+                                    </div>
+                                </td>
+                                <td class="text-right py-3 px-4">500</td>
+                                <td class="text-right py-3 px-4">₺74,85</td>
+                                <td class="text-right py-3 px-4">₺78,20</td>
+                                <td class="text-right py-3 px-4 font-medium">₺39.100</td>
+                                <td class="text-right py-3 px-4 text-green-600 font-medium">+₺1.675</td>
+                                <td class="text-center py-3 px-4">
+                                    <button onclick="sellInvestment('ASELS')"
+                                        class="text-red-600 hover:text-red-800 font-medium">Sat</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <span class="font-medium text-gray-900">TUPRS</span>
+                                        <span class="ml-2 text-sm text-gray-500">Tüpraş</span>
+                                    </div>
+                                </td>
+                                <td class="text-right py-3 px-4">200</td>
+                                <td class="text-right py-3 px-4">₺312,50</td>
+                                <td class="text-right py-3 px-4">₺328,75</td>
+                                <td class="text-right py-3 px-4 font-medium">₺65.750</td>
+                                <td class="text-right py-3 px-4 text-green-600 font-medium">+₺3.250</td>
+                                <td class="text-center py-3 px-4">
+                                    <button onclick="sellInvestment('TUPRS')"
+                                        class="text-red-600 hover:text-red-800 font-medium">Sat</button>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-100 hover:bg-gray-50">
+                                <td class="py-3 px-4">
+                                    <div class="flex items-center">
+                                        <span class="font-medium text-gray-900">Gold</span>
+                                        <span class="ml-2 text-sm text-gray-500">Gram Altın</span>
+                                    </div>
+                                </td>
+                                <td class="text-right py-3 px-4">20</td>
+                                <td class="text-right py-3 px-4">₺2.756</td>
+                                <td class="text-right py-3 px-4">₺2.847</td>
+                                <td class="text-right py-3 px-4 font-medium">₺56.940</td>
+                                <td class="text-right py-3 px-4 text-green-600 font-medium">+₺1.820</td>
+                                <td class="text-center py-3 px-4">
+                                    <button onclick="sellInvestment('GOLD')"
+                                        class="text-red-600 hover:text-red-800 font-medium">Sat</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Investment Simulation Tab -->
+    <section id="content-simulation" class="py-12 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Simulation Controls -->
+            <div class="simulation-container rounded-xl p-8 mb-8">
+                <h2 class="text-2xl font-bold text-gray-900 mb-6">Monte Carlo Yatırım Simülasyonu</h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Başlangıç Tutarı (₺)</label>
+                        <input type="number" id="simulation-amount" value="100000"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Yatırım Süresi (Yıl)</label>
+                        <select id="simulation-period"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="1">1 Yıl</option>
+                            <option value="2">2 Yıl</option>
+                            <option value="3">3 Yıl</option>
+                            <option value="5" selected>5 Yıl</option>
+                            <option value="10">10 Yıl</option>
+                            <option value="15">15 Yıl</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Risk Profili</label>
+                        <select id="simulation-risk"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="very_conservative">Çok Koruyucu</option>
+                            <option value="conservative">Koruyucu</option>
+                            <option value="balanced" selected>Dengeli</option>
+                            <option value="growth">Büyüme Odaklı</option>
+                            <option value="aggressive">Agresif</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Simülasyon Sayısı</label>
+                        <select id="simulation-count"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="1000">1.000</option>
+                            <option value="5000" selected>5.000</option>
+                            <option value="10000">10.000</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex space-x-4">
+                    <button onclick="runSimulation()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-all">
+                        Simülasyonu Başlat
+                    </button>
+                    <button onclick="resetSimulation()"
+                        class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-3 px-6 rounded-lg transition-all">
+                        Sıfırla
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Results -->
+            <div id="simulation-results" class="grid grid-cols-1 lg:grid-cols-2 gap-8 hidden">
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Monte Carlo Simülasyon Yolları</h3>
+                    <div id="simulation-chart" class="h-80"></div>
+                </div>
+
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Senaryo Analizi</h3>
+
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center p-4 bg-green-50 rounded-lg">
+                            <span class="font-medium text-gray-900">İyi Senaryo (%95)</span>
+                            <span class="text-green-600 font-bold" id="best-scenario">--</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-4 bg-blue-50 rounded-lg">
+                            <span class="font-medium text-gray-900">Olası Senaryo (Medyan)</span>
+                            <span class="text-blue-600 font-bold" id="likely-scenario">--</span>
+                        </div>
+
+                        <div class="flex justify-between items-center p-4 bg-red-50 rounded-lg">
+                            <span class="font-medium text-gray-900">Kötü Senaryo (%5)</span>
+                            <span class="text-red-600 font-bold" id="worst-scenario">--</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-1">Zarar Olasılığı</h4>
+                            <p class="text-xl font-bold text-red-600" id="loss-probability">--</p>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-1">Beklenen Final Değer</h4>
+                            <p class="text-xl font-bold text-gray-900" id="expected-final-value">--</p>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-1">VaR %95</h4>
+                            <p class="text-xl font-bold text-orange-600" id="simulation-var">--</p>
+                        </div>
+
+                        <div class="p-4 bg-gray-50 rounded-lg">
+                            <h4 class="font-semibold text-gray-900 mb-1">CVaR %95</h4>
+                            <p class="text-xl font-bold text-red-700" id="simulation-cvar">--</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6 p-4 bg-gray-50 rounded-lg">
+                        <h4 class="font-semibold text-gray-900 mb-2">Olası Getiri Aralığı</h4>
+
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-600">Kötü Senaryo</span>
+                            <span class="text-sm text-gray-600">İyi Senaryo</span>
+                        </div>
+
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-2">
+                            <div class="bg-gradient-to-r from-red-400 via-yellow-400 to-green-400 h-2 rounded-full"
+                                style="width: 100%"></div>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-xs text-gray-500" id="min-return">--</span>
+                            <span class="text-xs text-gray-500" id="max-return">--</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    </section>
+
+    <!-- Risk Assessment Tab -->
+    <section id="content-risk" class="py-12 hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+            <!-- Asset Allocation Form -->
+            <div class="analysis-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Varlık Dağılımı ile Risk Değerlendirmesi</h3>
+                <p class="text-sm text-gray-600 mb-6">
+                    Portföyünüzdeki varlık sınıflarının yüzdesini girin. Toplam dağılım %100 olmalıdır.
+                </p>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Hisse Senedi (%)</label>
+                        <input type="number" id="risk-stock" value="40" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Altın (%)</label>
+                        <input type="number" id="risk-gold" value="25" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Döviz (%)</label>
+                        <input type="number" id="risk-fx" value="15" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nakit / Mevduat (%)</label>
+                        <input type="number" id="risk-cash" value="10" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tahvil / Fon (%)</label>
+                        <input type="number" id="risk-bond" value="5" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Kripto / Yüksek Risk (%)</label>
+                        <input type="number" id="risk-crypto" value="5" min="0" max="100"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    </div>
+                </div>
+
+                <button onclick="calculateRiskProfile()"
+                    class="w-full mt-6 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
+                    Riskimi Hesapla
+                </button>
+
+                <p id="risk-total-warning" class="text-sm mt-3 hidden"></p>
+            </div>
+
+            <!-- Risk Output -->
+            <div class="analysis-card rounded-xl p-6">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Risk Sonucu</h3>
+
+                <div class="space-y-5">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="text-sm text-gray-500">Risk Skoru</div>
+                        <div id="allocation-risk-score" class="text-3xl font-bold text-gray-900">--</div>
+                        <div id="allocation-risk-label" class="text-sm font-semibold mt-1">--</div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="text-sm text-gray-500">Çeşitlendirme Yorumu</div>
+                        <div id="allocation-diversification" class="text-lg font-bold text-gray-900 mt-1">--</div>
+                    </div>
+
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <div class="text-sm text-gray-500">En Yüksek Risk Katkısı</div>
+                        <div id="allocation-main-risk" class="text-lg font-bold text-gray-900 mt-1">--</div>
+                    </div>
+
+                    <div class="p-4 bg-yellow-50 rounded-lg">
+                        <div class="text-sm font-semibold text-gray-900 mb-2">Yorum ve Öneriler</div>
+                        <ul id="allocation-suggestions" class="text-sm text-gray-700 list-disc pl-5 space-y-1">
+                            <li>Dağılımı girip hesaplama yapın.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Risk Distribution Chart -->
+        <div class="analysis-card rounded-xl p-6">
+            <h3 class="text-xl font-bold text-gray-900 mb-6">Varlık Sınıfı Dağılımı</h3>
+            <div id="risk-allocation-chart" class="h-80"></div>
+        </div>
+    </section>
+
+    <!-- Budget Tracker Tab -->
+    <section id="content-budget" class="py-12 hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- Income Input -->
+            <div class="analysis-card rounded-xl p-6 mb-8">
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Aylık Gelir Bilgisi</h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Aylık Gelir (₺)</label>
+                        <input type="number" id="monthly-income-input" value="25000"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+
+                    <div class="flex items-end">
+                        <button onclick="updateBudgetDashboard()"
+                            class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                            Geliri Güncelle
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Budget Overview -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Aylık Gelir</h3>
+                    <div class="text-3xl font-bold text-green-600" id="monthly-income">--</div>
+                    <div class="text-sm text-gray-600">Kullanıcı girişine göre</div>
+                </div>
+
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Aylık Gider</h3>
+                    <div class="text-3xl font-bold text-red-600" id="monthly-expense">--</div>
+                    <div class="text-sm text-gray-600">Eklenen giderlere göre</div>
+                </div>
+
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Tasarruf</h3>
+                    <div class="text-3xl font-bold text-blue-600" id="monthly-saving">--</div>
+                    <div class="text-sm text-gray-600" id="saving-rate">--</div>
+                </div>
+            </div>
+
+            <!-- Budget Categories -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="analysis-card rounded-xl p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold text-gray-900">Gider Kategorileri</h3>
+                        <button onclick="addExpense()"
+                            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all">
+                            Gider Ekle
+                        </button>
+                    </div>
+
+                    <div id="expense-chart" class="h-80"></div>
+                </div>
+
+                <div class="analysis-card rounded-xl p-6">
+                    <h3 class="text-xl font-bold text-gray-900 mb-6">Bütçe Takibi</h3>
+
+                    <div id="budget-list" class="space-y-4">
+                        <!-- JS dolduracak -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-3 mb-4">
+                    <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
+                    <span class="text-xl font-bold">Finansal Analiz Platformu</span>
+                </div>
+                <p class="text-gray-400 mb-6">
+                    © 2024 Finansal Analiz Platformu. Tüm hakları saklıdır.
+                </p>
+                <p class="text-sm text-gray-500">
+                    Bu platform yalnızca eğitim ve bilgilendirme amaçlıdır. Yatırım tavsiyesi değildir.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="analysis.js"></script>
+</body>
+
+</html>
