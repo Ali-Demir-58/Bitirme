@@ -9,7 +9,7 @@ let simulationChart = null;
 let riskChart = null;
 let expenseChart = null;
 
-let currentUser = null;
+let analysisUser = null;
 let marketStocks = [];
 let marketGoldPrice = null;
 
@@ -30,9 +30,9 @@ let budgetData = {
 // INIT
 // =========================
 document.addEventListener('DOMContentLoaded', async function () {
-    currentUser = await getLoggedInUser();
+    analysisUser = await getLoggedInUser();
 
-    if (!currentUser) {
+    if (!analysisUser) {
         window.location.href = 'login.html';
         return;
     }
@@ -146,7 +146,7 @@ async function loadUserPortfolio() {
     const { data, error } = await supabaseClient
         .from('portfolios')
         .select('id, symbol, name, amount, buy_price, created_at')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', analysisUser.id)
         .order('created_at', { ascending: true });
 
     if (error) {
@@ -169,7 +169,7 @@ async function loadUserExpenses() {
     const { data, error } = await supabaseClient
         .from('expenses')
         .select('id, category, description, amount, created_at')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', analysisUser.id)
         .order('created_at', { ascending: true });
 
     if (error) {
@@ -190,7 +190,7 @@ async function loadUserSettings() {
     const { data, error } = await supabaseClient
         .from('user_settings')
         .select('monthly_income')
-        .eq('user_id', currentUser.id)
+        .eq('user_id', analysisUser.id)
         .maybeSingle();
 
     if (error) {
@@ -202,7 +202,7 @@ async function loadUserSettings() {
         const { error: insertError } = await supabaseClient
             .from('user_settings')
             .insert({
-                user_id: currentUser.id,
+                user_id: analysisUser.id,
                 monthly_income: 25000
             });
 
@@ -222,12 +222,12 @@ async function loadUserSettings() {
 }
 
 async function saveMonthlyIncomeToSupabase() {
-    if (!currentUser) return;
+    if (!analysisUser) return;
 
     const { error } = await supabaseClient
         .from('user_settings')
         .upsert({
-            user_id: currentUser.id,
+            user_id: analysisUser.id,
             monthly_income: budgetData.income,
             updated_at: new Date().toISOString()
         }, {
@@ -704,7 +704,7 @@ async function saveInvestment() {
     const { error } = await supabaseClient
         .from('portfolios')
         .insert({
-            user_id: currentUser.id,
+            user_id: analysisUser.id,
             symbol: finalSymbol,
             name: assetName,
             amount: amount,
@@ -754,7 +754,7 @@ async function sellInvestment(holdingId) {
             .from('portfolios')
             .delete()
             .eq('id', holding.id)
-            .eq('user_id', currentUser.id);
+            .eq('user_id', analysisUser.id);
 
         if (error) {
             console.error('Yatırım silinemedi:', error);
@@ -768,7 +768,7 @@ async function sellInvestment(holdingId) {
             .from('portfolios')
             .update({ amount: newAmount })
             .eq('id', holding.id)
-            .eq('user_id', currentUser.id);
+            .eq('user_id', analysisUser.id);
 
         if (error) {
             console.error('Yatırım güncellenemedi:', error);
@@ -1228,7 +1228,7 @@ async function saveExpense() {
     const { error } = await supabaseClient
         .from('expenses')
         .insert({
-            user_id: currentUser.id,
+            user_id: analysisUser.id,
             category,
             description,
             amount
@@ -1335,7 +1335,7 @@ async function removeExpense(expenseId) {
         .from('expenses')
         .delete()
         .eq('id', expenseId)
-        .eq('user_id', currentUser.id);
+        .eq('user_id', analysisUser.id);
 
     if (error) {
         console.error('Gider silinemedi:', error);
