@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const XLSX = require('xlsx');
 const path = require('path');
+const nodemailer = require('nodemailer');
 
 const app = express();
 
@@ -118,7 +119,7 @@ function parseIndex(sheet) {
 }
 
 // =========================
-// API ROUTES
+// MARKET DATA API ROUTE
 // =========================
 
 app.get('/api/market-data', (req, res) => {
@@ -142,6 +143,90 @@ app.get('/api/market-data', (req, res) => {
         res.status(500).json({ error: 'Excel okunamadı' });
     }
 });
+
+// =========================
+// CONTACT FORM MAIL ROUTE
+// =========================
+
+const contactTransporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    }
+});
+
+app.post('/api/contact', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({
+                success: false,
+                error: 'Tüm alanlar zorunludur.'
+            });
+        }
+
+        if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+            console.error('SMTP_USER veya SMTP_PASS eksik.');
+            return res.status(500).json({
+                success: false,
+                error: 'Mail ayarları eksik.'
+            });
+        }
+
+        await contactTransporter.sendMail({
+            from: `"Finansal Analiz Platformu" <${process.env.SMTP_USER}>`,
+            to: process.env.CONTACT_TO_EMAIL || 'alidemir200258@gmail.com',
+            replyTo: email,
+            subject: `[Finansal Analiz Platformu] ${subject}`,
+            text: `
+Yeni iletişim formu mesajı
+
+Ad Soyad: ${name}
+E-posta: ${email}
+Konu: ${subject}
+
+Mesaj:
+${message}
+            `,
+            html: `
+                <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+                    <h2>Yeni İletişim Formu Mesajı</h2>
+                    <p><strong>Ad Soyad:</strong> ${escapeHtml(name)}</p>
+                    <p><strong>E-posta:</strong> ${escapeHtml(email)}</p>
+                    <p><strong>Konu:</strong> ${escapeHtml(subject)}</p>
+                    <hr>
+                    <p><strong>Mesaj:</strong></p>
+                    <p>${escapeHtml(message).replace(/\n/g, '<br>')}</p>
+                </div>
+            `
+        });
+
+        res.json({
+            success: true,
+            message: 'Mesaj başarıyla gönderildi.'
+        });
+
+    } catch (err) {
+        console.error('Mail gönderilemedi:', err);
+
+        res.status(500).json({
+            success: false,
+            error: 'Mail gönderilemedi.'
+        });
+    }
+});
+
+// Basit HTML escape helper
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 // =========================
 // START SERVER
