@@ -4,9 +4,46 @@ const XLSX = require('xlsx');
 const path = require('path');
 
 const app = express();
+
 app.use(cors());
+app.use(express.json());
+
+// Statik dosyaları yayınla: html, js, css, resources, data vs.
+app.use(express.static(__dirname));
 
 const FILE_PATH = path.join(__dirname, 'data', 'data.xlsx');
+
+// =========================
+// PAGE ROUTES
+// =========================
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+app.get('/analysis', (req, res) => {
+    res.sendFile(path.join(__dirname, 'analysis.html'));
+});
+
+app.get('/guide', (req, res) => {
+    res.sendFile(path.join(__dirname, 'guide.html'));
+});
+
+app.get('/iletisim', (req, res) => {
+    res.sendFile(path.join(__dirname, 'iletisim.html'));
+});
+
+app.get('/login', (req, res) => {
+    res.sendFile(path.join(__dirname, 'login.html'));
+});
+
+app.get('/register', (req, res) => {
+    res.sendFile(path.join(__dirname, 'register.html'));
+});
+
+// =========================
+// EXCEL PARSE HELPERS
+// =========================
 
 function parseNumber(value) {
     if (value === null || value === undefined || value === '') return null;
@@ -22,6 +59,8 @@ function parseNumber(value) {
 }
 
 function parseKeyValue(sheet) {
+    if (!sheet) return {};
+
     const rows = XLSX.utils.sheet_to_json(sheet);
     const obj = {};
 
@@ -34,6 +73,8 @@ function parseKeyValue(sheet) {
 }
 
 function parseStocks(sheet) {
+    if (!sheet) return [];
+
     const rows = XLSX.utils.sheet_to_json(sheet);
 
     return rows.map(row => {
@@ -64,6 +105,8 @@ function parseStocks(sheet) {
 }
 
 function parseIndex(sheet) {
+    if (!sheet) return [];
+
     const rows = XLSX.utils.sheet_to_json(sheet);
 
     return rows.map(row => ({
@@ -73,6 +116,10 @@ function parseIndex(sheet) {
         diff: parseNumber(row['FARK'])
     }));
 }
+
+// =========================
+// API ROUTES
+// =========================
 
 app.get('/api/market-data', (req, res) => {
     try {
@@ -88,7 +135,6 @@ app.get('/api/market-data', (req, res) => {
         };
 
         console.log('Okunan Excel:', FILE_PATH);
-        console.log('FROTO kontrol:', data.stocks.find(s => s.symbol === 'FROTO'));
 
         res.json(data);
     } catch (err) {
@@ -97,16 +143,12 @@ app.get('/api/market-data', (req, res) => {
     }
 });
 
+// =========================
+// START SERVER
+// =========================
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
-});
-
-app.get('/login', (req, res) => {
-    res.sendFile(path.join(__dirname, 'login.html'));
-});
-
-app.get('/register', (req, res) => {
-    res.sendFile(path.join(__dirname, 'register.html'));
 });
