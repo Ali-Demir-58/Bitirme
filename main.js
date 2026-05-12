@@ -659,7 +659,7 @@ function setChange(id, value, suffix = '') {
 
 async function loadExcelMarketData() {
     try {
-        const res = await fetch('http://localhost:3000/api/market-data');
+        const res = await fetch('/api/market-data');
         const data = await res.json();
 
         console.log('API DATA:', data);
@@ -753,7 +753,7 @@ function setChange(id, value) {
 
 async function loadExcelMarketData() {
     try {
-        const res = await fetch('http://localhost:3000/api/market-data');
+        const res = await fetch('/api/market-data');
         const data = await res.json();
 
         console.log('DATA:', data);
@@ -1251,7 +1251,7 @@ window.calculateRiskTestResult = calculateRiskTestResult;
 // =========================
 async function loadExcelMarketData() {
     try {
-        const res = await fetch('http://localhost:3000/api/market-data');
+        const res = await fetch('/api/market-data');
         const data = await res.json();
 
         console.log('API DATA:', data);
