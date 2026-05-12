@@ -187,11 +187,11 @@
                     </p>
 
                     <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-                        <button onclick="startQuiz()"
+                        <button type="button" onclick="startQuiz()"
                             class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-3 px-6 rounded-lg transition-all">
                             Bilgi Testi Başlat
                         </button>
-                        <button onclick="scrollToContent()"
+                        <button type="button" onclick="scrollToContent()"
                             class="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-3 px-6 rounded-lg transition-all">
                             Rehberi İncele
                         </button>
@@ -210,19 +210,19 @@
     <section class="py-6 sm:py-8 bg-white border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-2 sm:flex sm:flex-wrap justify-center gap-3 sm:gap-4">
-                <button onclick="scrollToSection('basics')"
+                <button type="button" onclick="scrollToSection('basics')"
                     class="px-4 sm:px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all text-sm sm:text-base">
                     Temel Bilgiler
                 </button>
-                <button onclick="scrollToSection('instruments')"
+                <button type="button" onclick="scrollToSection('instruments')"
                     class="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm sm:text-base">
                     Yatırım Araçları
                 </button>
-                <button onclick="scrollToSection('strategies')"
+                <button type="button" onclick="scrollToSection('strategies')"
                     class="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm sm:text-base">
                     Stratejiler
                 </button>
-                <button onclick="scrollToSection('quiz')"
+                <button type="button" onclick="scrollToSection('quiz')"
                     class="px-4 sm:px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 transition-all text-sm sm:text-base">
                     Bilgi Testi
                 </button>
@@ -347,7 +347,7 @@
 
                 <!-- BIST Hisse Senetleri -->
                 <div class="guide-card rounded-xl overflow-hidden">
-                    <button onclick="toggleAccordion('bist-stocks')"
+                    <button type="button" onclick="toggleAccordion('bist-stocks')"
                         class="w-full px-4 sm:px-8 py-5 sm:py-6 text-left flex justify-between items-center gap-4 hover:bg-gray-50">
                         <div class="flex items-center space-x-4 min-w-0">
                             <span class="text-3xl shrink-0">📈</span>
@@ -400,7 +400,7 @@
 
                 <!-- Altın -->
                 <div class="guide-card rounded-xl overflow-hidden">
-                    <button onclick="toggleAccordion('gold')"
+                    <button type="button" onclick="toggleAccordion('gold')"
                         class="w-full px-4 sm:px-8 py-5 sm:py-6 text-left flex justify-between items-center gap-4 hover:bg-gray-50">
                         <div class="flex items-center space-x-4 min-w-0">
                             <span class="text-3xl shrink-0">🥇</span>
@@ -453,7 +453,7 @@
 
                 <!-- Döviz -->
                 <div class="guide-card rounded-xl overflow-hidden">
-                    <button onclick="toggleAccordion('fx')"
+                    <button type="button" onclick="toggleAccordion('fx')"
                         class="w-full px-4 sm:px-8 py-5 sm:py-6 text-left flex justify-between items-center gap-4 hover:bg-gray-50">
                         <div class="flex items-center space-x-4 min-w-0">
                             <span class="text-3xl shrink-0">💵</span>
@@ -506,7 +506,7 @@
 
                 <!-- Tahvil ve Bonolar -->
                 <div class="guide-card rounded-xl overflow-hidden">
-                    <button onclick="toggleAccordion('bonds')"
+                    <button type="button" onclick="toggleAccordion('bonds')"
                         class="w-full px-4 sm:px-8 py-5 sm:py-6 text-left flex justify-between items-center gap-4 hover:bg-gray-50">
                         <div class="flex items-center space-x-4 min-w-0">
                             <span class="text-3xl shrink-0">📜</span>
@@ -559,7 +559,7 @@
 
                 <!-- Yatırım Fonları -->
                 <div class="guide-card rounded-xl overflow-hidden">
-                    <button onclick="toggleAccordion('funds')"
+                    <button type="button" onclick="toggleAccordion('funds')"
                         class="w-full px-4 sm:px-8 py-5 sm:py-6 text-left flex justify-between items-center gap-4 hover:bg-gray-50">
                         <div class="flex items-center space-x-4 min-w-0">
                             <span class="text-3xl shrink-0">🎯</span>
@@ -800,7 +800,7 @@
                     <p class="text-gray-600 mb-8">
                         10 soruluk bu test, finansal okuryazarlık seviyenizi değerlendirecektir.
                     </p>
-                    <button onclick="startQuiz()"
+                    <button type="button" onclick="startQuiz()"
                         class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-8 rounded-lg text-lg transition-all">
                         Testi Başlat
                     </button>
@@ -821,12 +821,12 @@
                     </div>
 
                     <div class="flex justify-between gap-4 mt-8">
-                        <button id="prev-btn" onclick="previousQuestion()"
+                        <button type="button" id="prev-btn" onclick="previousQuestion()"
                             class="w-1/2 sm:w-auto px-5 sm:px-6 py-3 bg-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-400 transition-all"
                             disabled>
                             Önceki
                         </button>
-                        <button id="next-btn" onclick="nextQuestion()"
+                        <button type="button" id="next-btn" onclick="nextQuestion()"
                             class="w-1/2 sm:w-auto px-5 sm:px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all">
                             Sonraki
                         </button>
@@ -841,11 +841,11 @@
                         Tebrikler! Finansal okuryazarlık seviyeniz oldukça iyi.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                        <button onclick="restartQuiz()"
+                        <button type="button" onclick="restartQuiz()"
                             class="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-all">
                             Testi Tekrarla
                         </button>
-                        <button onclick="shareResults()"
+                        <button type="button" onclick="shareResults()"
                             class="px-6 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-all">
                             Sonucu Paylaş
                         </button>
@@ -877,6 +877,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="supabaseClient.js"></script>
     <script src="auth.js"></script>
+    <script src="guide.js"></script>
+
 </body>
 
 </html>

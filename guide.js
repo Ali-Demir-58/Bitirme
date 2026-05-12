@@ -131,8 +131,12 @@ document.addEventListener('DOMContentLoaded', function () {
     initializeAnimations();
     initializeInteractions();
 
-    if (window.location.hash === '#quiz') {
-        scrollToSection('quiz');
+    const hash = window.location.hash.replace('#', '').trim();
+
+    if (hash) {
+        setTimeout(() => {
+            scrollToSection(hash);
+        }, 250);
     }
 });
 
@@ -150,6 +154,17 @@ function safeAnime(config) {
 
 function isMobileScreen() {
     return window.innerWidth < 768;
+}
+
+function getNavbarOffset() {
+    const nav = document.querySelector('nav');
+    const navHeight = nav ? nav.offsetHeight : 70;
+    return navHeight + 18;
+}
+
+function safeSetText(id, value) {
+    const el = getEl(id);
+    if (el) el.textContent = value;
 }
 
 // =========================
@@ -208,14 +223,12 @@ function toggleAccordion(sectionId) {
             icon.style.transform = 'rotate(180deg)';
         }
 
-        if (isMobileScreen()) {
-            setTimeout(() => {
-                content.parentElement?.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }, 120);
-        }
+        setTimeout(() => {
+            const parentCard = content.closest('.guide-card');
+            if (parentCard) {
+                scrollToElement(parentCard);
+            }
+        }, 120);
     }
 }
 
@@ -223,6 +236,8 @@ function toggleAccordion(sectionId) {
 // QUIZ
 // =========================
 function startQuiz() {
+    scrollToSection('quiz');
+
     quizStarted = true;
     currentQuestionIndex = 0;
     quizScore = 0;
@@ -235,11 +250,11 @@ function startQuiz() {
     loadQuestion();
 
     setTimeout(() => {
-        getEl('quiz-container')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
-    }, 100);
+        const quizContainer = getEl('quiz-container');
+        if (quizContainer) {
+            scrollToElement(quizContainer);
+        }
+    }, 250);
 }
 
 function loadQuestion() {
@@ -299,19 +314,11 @@ function loadQuestion() {
                 selectedOption.classList.add('selected');
             }
 
-            const explanation = getEl('explanation');
-            if (explanation) {
-                explanation.classList.remove('hidden');
-            }
+            getEl('explanation')?.classList.remove('hidden');
         });
     });
 
     restoreSelectedAnswer();
-}
-
-function safeSetText(id, value) {
-    const el = getEl(id);
-    if (el) el.textContent = value;
 }
 
 function restoreSelectedAnswer() {
@@ -347,11 +354,9 @@ function nextQuestion() {
     currentQuestionIndex++;
     loadQuestion();
 
-    if (isMobileScreen()) {
-        getEl('quiz-container')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+    const quizContainer = getEl('quiz-container');
+    if (quizContainer) {
+        scrollToElement(quizContainer);
     }
 }
 
@@ -361,11 +366,9 @@ function previousQuestion() {
     currentQuestionIndex--;
     loadQuestion();
 
-    if (isMobileScreen()) {
-        getEl('quiz-container')?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-        });
+    const quizContainer = getEl('quiz-container');
+    if (quizContainer) {
+        scrollToElement(quizContainer);
     }
 }
 
@@ -405,19 +408,21 @@ function finishQuiz() {
     safeSetText('result-message', message);
     safeSetText('result-emoji', emoji);
 
-    safeAnime({
-        targets: '#quiz-results > *',
-        translateY: [20, 0],
-        opacity: [0, 1],
-        duration: 500,
-        easing: 'easeOutExpo',
-        delay: anime.stagger(80)
-    });
+    if (typeof anime !== 'undefined') {
+        anime({
+            targets: '#quiz-results > *',
+            translateY: [20, 0],
+            opacity: [0, 1],
+            duration: 500,
+            easing: 'easeOutExpo',
+            delay: anime.stagger(80)
+        });
+    }
 
-    getEl('quiz-container')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
+    const quizContainer = getEl('quiz-container');
+    if (quizContainer) {
+        scrollToElement(quizContainer);
+    }
 }
 
 function restartQuiz() {
@@ -436,10 +441,10 @@ function restartQuiz() {
     if (prevBtn) prevBtn.disabled = true;
     if (nextBtn) nextBtn.textContent = 'Sonraki';
 
-    getEl('quiz-container')?.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
+    const quizContainer = getEl('quiz-container');
+    if (quizContainer) {
+        scrollToElement(quizContainer);
+    }
 }
 
 function shareResults() {
@@ -480,15 +485,28 @@ function copyShareText(text) {
 // =========================
 // SCROLL HELPERS
 // =========================
+function scrollToElement(element) {
+    if (!element) return;
+
+    const navbarOffset = getNavbarOffset();
+    const elementTop = element.getBoundingClientRect().top + window.pageYOffset - navbarOffset;
+
+    window.scrollTo({
+        top: elementTop,
+        behavior: 'smooth'
+    });
+}
+
 function scrollToSection(sectionId) {
     const section = getEl(sectionId);
 
     if (!section) return;
 
-    section.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-    });
+    scrollToElement(section);
+
+    if (history.replaceState) {
+        history.replaceState(null, '', `#${sectionId}`);
+    }
 }
 
 function scrollToContent() {
@@ -543,7 +561,6 @@ function showNotification(message, type = 'info') {
 // INTERACTIONS
 // =========================
 function initializeInteractions() {
-    // Mobilde hover-scale animasyonu sorun çıkarabildiği için sadece desktop’ta çalıştırıyoruz.
     if (!isMobileScreen() && typeof anime !== 'undefined') {
         document.querySelectorAll('.guide-card').forEach(card => {
             card.addEventListener('mouseenter', function () {
