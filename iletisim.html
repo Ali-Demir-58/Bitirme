@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>İletişim - Finansal Analiz Platformu</title>
-    <meta name="description"
-        content="Finansal Analiz Platformu iletişim sayfası. Görüş, öneri ve sorularınız için bizimle iletişime geçin.">
+    <meta name="description" content="Finansal Analiz Platformu proje ekibiyle LinkedIn üzerinden iletişime geçin.">
 
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -90,7 +89,7 @@
                     <span class="text-lg sm:text-xl font-bold text-gray-900">Finansal Analiz</span>
                 </a>
 
-                <div class="hidden md:flex space-x-8">
+                <div class="hidden md:flex space-x-8 items-center">
                     <a href="index.html"
                         class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Anasayfa</a>
                     <a href="analysis.html"
@@ -130,15 +129,14 @@
     <section class="pt-28 pb-14 sm:pt-32 sm:pb-20 gradient-bg">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl sm:text-5xl font-bold text-white mb-5">
-                Bize <span class="text-gradient">Ulaşın</span>
+                Ekibimizle <span class="text-gradient">Bağlantı Kurun</span>
             </h1>
             <p class="text-base sm:text-xl text-blue-100 max-w-3xl mx-auto leading-relaxed">
-                Finansal analiz platformu hakkında görüş, öneri veya sorularınızı bizimle paylaşabilirsiniz.
+                Finansal Analiz Platformu proje ekibine LinkedIn üzerinden ulaşabilirsiniz.
             </p>
         </div>
     </section>
 
-    <!-- Contact Content -->
     <!-- Contact Content -->
     <main class="py-12 sm:py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -218,33 +216,10 @@
         </div>
     </footer>
 
-    <script>
-        function sendMessage(e) {
-            e.preventDefault();
-
-            const name = document.getElementById('name').value.trim();
-            const email = document.getElementById('email').value.trim();
-            const subject = document.getElementById('subject').value.trim();
-            const message = document.getElementById('message').value.trim();
-            const status = document.getElementById('form-status');
-
-            if (!name || !email || !subject || !message) {
-                status.className = 'mt-6 p-4 rounded-lg text-sm font-medium bg-red-50 text-red-700 border border-red-200';
-                status.textContent = 'Lütfen tüm alanları doldurun.';
-                status.classList.remove('hidden');
-                return;
-            }
-
-            status.className = 'mt-6 p-4 rounded-lg text-sm font-medium bg-green-50 text-green-700 border border-green-200';
-            status.textContent = 'Mesajınız başarıyla alındı. Bu demo sürümde mesaj gönderimi simüle edilmektedir.';
-            status.classList.remove('hidden');
-
-            document.getElementById('name').value = '';
-            document.getElementById('email').value = '';
-            document.getElementById('subject').value = '';
-            document.getElementById('message').value = '';
-        }
-    </script>
+    <!-- Auth scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabaseClient.js"></script>
+    <script src="auth.js"></script>
 
 </body>
 
