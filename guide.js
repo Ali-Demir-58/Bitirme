@@ -1,12 +1,16 @@
 // Finansal Analiz Platformu - Guide JavaScript
 
-// Global Variables
+// =========================
+// GLOBAL STATE
+// =========================
 let currentQuestionIndex = 0;
 let quizScore = 0;
 let userAnswers = [];
 let quizStarted = false;
 
-// Quiz Questions
+// =========================
+// QUIZ QUESTIONS
+// =========================
 const quizQuestions = [
     {
         question: "Bileşik faiz nedir?",
@@ -20,17 +24,6 @@ const quizQuestions = [
         explanation: "Bileşik faiz, faizin anaparaya eklenerek bir sonraki dönemde bu toplam tutar üzerinden faiz hesaplanmasıdır."
     },
     {
-        question: "2024 yılında Türkiye'de enflasyon karşısında reel getiri sağlayan tek yatırım aracı hangisidir?",
-        options: [
-            "BIST 100",
-            "Dolar",
-            "Altın",
-            "Mevduat faizi"
-        ],
-        correct: 2,
-        explanation: "2024 yılında sadece altın yatırımcısına %12,11 oranında reel getiri sağladı."
-    },
-    {
         question: "Risk toleransı nedir?",
         options: [
             "Yatırım yapılacak minimum tutar",
@@ -39,7 +32,7 @@ const quizQuestions = [
             "Faiz oranının değişme hızı"
         ],
         correct: 1,
-        explanation: "Risk toleransı, bir yatırımcının mali kayıplara karşı dayanabilme gücüdür."
+        explanation: "Risk toleransı, bir yatırımcının mali kayıplara ve dalgalanmalara karşı dayanabilme düzeyidir."
     },
     {
         question: "Portföy çeşitlendirmenin temel amacı nedir?",
@@ -50,435 +43,589 @@ const quizQuestions = [
             "Vergi avantajı sağlamak"
         ],
         correct: 1,
-        explanation: "Çeşitlendirme, yatırımları farklı varlıklara yayarak toplam riski azaltma stratejisidir."
+        explanation: "Çeşitlendirme, yatırımları farklı varlıklara yayarak toplam portföy riskini azaltmayı amaçlar."
     },
     {
         question: "BIST 100 endeksi nedir?",
         options: [
-                            "Türkiye'deki 100 en büyük şirketin hisse senetlerinden oluşan endeks",
+            "Türkiye'deki seçili büyük şirketlerin hisse senetlerinden oluşan endeks",
             "İstanbul'daki 100 bankanın performans endeksi",
             "Döviz kurlarını gösteren endeks",
             "Tahvil piyasasını gösteren endeks"
         ],
         correct: 0,
-        explanation: "BIST 100, Borsa İstanbul'da işlem gören en büyük 100 şirketin hisse senetlerinden oluşan endekstir."
+        explanation: "BIST 100, Borsa İstanbul'da işlem gören ve belirli kriterlere göre seçilen 100 paydan oluşan önemli bir endekstir."
     },
     {
-        question: "Yüksek enflasyon dönemlerinde hangi yatırım araçları tercih edilmelidir?",
+        question: "Düzenli aralıklarla sabit tutarda yatırım yapma stratejisi nasıl adlandırılır?",
         options: [
-            "Sadece döviz",
-            "Sadece mevduat",
-            "Enflasyona endeksli araçlar ve emtialar",
-            "Sadece hisse senetleri"
-        ],
-        correct: 2,
-        explanation: "Enflasyon dönemlerinde enflasyona endeksli tahviller, altın gibi emtialar ve hisse senetleri tercih edilmelidir."
-    },
-    {
-        question: "Dolar maliyet ortalaması stratejisi nedir?",
-        options: [
-            "Döviz alım-satımı yaparak kar elde etme",
-            "Düzenli aralıklarla sabit tutarda yatırım yapma",
-            "Sadece dolar bazlı yatırım yapma",
-            "Piyasa düşüşlerini bekleyerek yatırım yapma"
+            "Kaldıraçlı işlem",
+            "Dolar maliyet ortalaması",
+            "Açığa satış",
+            "Teknik analiz"
         ],
         correct: 1,
-        explanation: "Dolar maliyet ortalaması, belirli aralıklarla sabit tutarlarda yatırım yaparak ortalama alım maliyetini düşürme stratejisidir."
+        explanation: "Dolar maliyet ortalaması, belirli aralıklarla sabit tutarda yatırım yaparak ortalama maliyeti dengelemeyi amaçlar."
     },
     {
-        question: "2024 yılı itibarıyla Türkiye'de yatırımcı sayısı kaç milyon civarındadır?",
+        question: "Enflasyon yatırım kararlarında neden önemlidir?",
         options: [
-            "3 milyon",
-            "5 milyon",
-            "7 milyon",
-            "10 milyon"
-        ],
-        correct: 2,
-        explanation: "2024 yılı itibarıyla Türkiye'de yaklaşık 7,1 milyon yatırımcı bulunmaktadır."
-    },
-    {
-        question: "Sharpe oranı neyi gösterir?",
-        options: [
-            "Yatırımın toplam getirisini",
-            "Risk-getiri performansını",
-            "Piyasa değerini",
-            "İşlem hacmini"
+            "Sadece döviz fiyatlarını etkilediği için",
+            "Paranın satın alma gücünü etkilediği için",
+            "Sadece hisse senetlerini etkilediği için",
+            "Yatırım riskini tamamen ortadan kaldırdığı için"
         ],
         correct: 1,
-        explanation: "Sharpe oranı, bir yatırımın risk-getiri performansını ölçer. Risk birimine karşılık elde edilen getiriyi gösterir."
+        explanation: "Enflasyon, paranın satın alma gücünü azaltır. Bu nedenle nominal getiri kadar reel getiri de önemlidir."
     },
     {
-        question: "Türk yatırımcılarının tasarruflarını en çok hangi araçta değerlendirdiği görülmektedir?",
+        question: "Sharpe oranı genel olarak neyi ölçer?",
         options: [
-            "Hisse senetleri",
-            "Vadeli mevduat",
-            "Altın",
-            "Döviz"
+            "Yatırımın toplam işlem hacmini",
+            "Risk başına elde edilen getiriyi",
+            "Şirketin piyasa değerini",
+            "Döviz kurunun değişim hızını"
         ],
         correct: 1,
-        explanation: "Araştırmalar göstermektedir ki Türk yatırımcılar tasarruflarının en büyük kısmını vadeli mevduatta değerlendirmektedir."
+        explanation: "Sharpe oranı, bir yatırımın aldığı riske kıyasla ne kadar getiri sağladığını değerlendirmek için kullanılır."
+    },
+    {
+        question: "Likidite ne anlama gelir?",
+        options: [
+            "Bir varlığın kolayca nakde çevrilebilmesi",
+            "Bir yatırımın hiç risk taşımaması",
+            "Sadece nakit para tutmak",
+            "Yüksek faiz getirisi"
+        ],
+        correct: 0,
+        explanation: "Likidite, bir varlığın değer kaybı yaşamadan veya az kayıpla hızlıca nakde çevrilebilme özelliğidir."
+    },
+    {
+        question: "Uzun vadeli yatırımda en önemli avantajlardan biri hangisidir?",
+        options: [
+            "Her gün işlem yapma zorunluluğu",
+            "Bileşik getiriden faydalanma",
+            "Risksiz kazanç garantisi",
+            "Vergi ödememe"
+        ],
+        correct: 1,
+        explanation: "Uzun vadede bileşik getiri etkisi daha belirgin hale gelir ve yatırım büyümesine katkı sağlayabilir."
+    },
+    {
+        question: "Yatırım tavsiyesi ile bilgilendirme arasındaki fark nedir?",
+        options: [
+            "İkisi tamamen aynıdır",
+            "Bilgilendirme genel bilgi verir, yatırım tavsiyesi kişiye özel yönlendirme içerir",
+            "Bilgilendirme sadece bankalar tarafından yapılır",
+            "Yatırım tavsiyesi hiçbir zaman risk içermez"
+        ],
+        correct: 1,
+        explanation: "Bilgilendirme genel eğitim amaçlıdır; yatırım tavsiyesi ise kişinin finansal durumuna ve hedeflerine göre özel yönlendirme içerir."
     }
 ];
 
-// Initialize Application
-document.addEventListener('DOMContentLoaded', function() {
+// =========================
+// INIT
+// =========================
+document.addEventListener('DOMContentLoaded', function () {
     initializeAnimations();
     initializeInteractions();
+
+    if (window.location.hash === '#quiz') {
+        scrollToSection('quiz');
+    }
 });
 
-// Animation Functions
+// =========================
+// SAFE HELPERS
+// =========================
+function getEl(id) {
+    return document.getElementById(id);
+}
+
+function safeAnime(config) {
+    if (typeof anime === 'undefined') return;
+    anime(config);
+}
+
+function isMobileScreen() {
+    return window.innerWidth < 768;
+}
+
+// =========================
+// ANIMATIONS
+// =========================
 function initializeAnimations() {
-    // Animate guide cards on scroll
+    if (typeof anime === 'undefined') return;
+
+    const cards = document.querySelectorAll('.guide-card');
+    if (!cards.length) return;
+
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                anime({
-                    targets: entry.target,
-                    translateY: [30, 0],
-                    opacity: [0, 1],
-                    duration: 600,
-                    easing: 'easeOutExpo',
-                    delay: 100
-                });
-            }
+            if (!entry.isIntersecting) return;
+
+            anime({
+                targets: entry.target,
+                translateY: [20, 0],
+                opacity: [0, 1],
+                duration: 500,
+                easing: 'easeOutExpo'
+            });
+
+            observer.unobserve(entry.target);
         });
+    }, {
+        threshold: 0.15
     });
 
-    document.querySelectorAll('.guide-card').forEach(card => {
-        observer.observe(card);
-    });
+    cards.forEach(card => observer.observe(card));
 }
 
-// Accordion Functions
+// =========================
+// ACCORDION
+// =========================
 function toggleAccordion(sectionId) {
-    const content = document.getElementById(sectionId + '-content');
-    const icon = document.getElementById(sectionId + '-icon');
-    
-    if (content.classList.contains('active')) {
-        content.classList.remove('active');
-        icon.style.transform = 'rotate(0deg)';
-    } else {
-        // Close all other accordions
-        document.querySelectorAll('.accordion-content').forEach(acc => {
-            acc.classList.remove('active');
-        });
-        document.querySelectorAll('[id$="-icon"]').forEach(ic => {
-            ic.style.transform = 'rotate(0deg)';
-        });
-        
-        // Open current accordion
+    const content = getEl(`${sectionId}-content`);
+    const icon = getEl(`${sectionId}-icon`);
+
+    if (!content) return;
+
+    const isActive = content.classList.contains('active');
+
+    document.querySelectorAll('.accordion-content').forEach(acc => {
+        acc.classList.remove('active');
+    });
+
+    document.querySelectorAll('[id$="-icon"]').forEach(ic => {
+        ic.style.transform = 'rotate(0deg)';
+    });
+
+    if (!isActive) {
         content.classList.add('active');
-        icon.style.transform = 'rotate(180deg)';
+
+        if (icon) {
+            icon.style.transform = 'rotate(180deg)';
+        }
+
+        if (isMobileScreen()) {
+            setTimeout(() => {
+                content.parentElement?.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }, 120);
+        }
     }
 }
 
-// Quiz Functions
+// =========================
+// QUIZ
+// =========================
 function startQuiz() {
-    if (!quizStarted) {
-        quizStarted = true;
-        currentQuestionIndex = 0;
-        quizScore = 0;
-        userAnswers = [];
-        
-        document.getElementById('quiz-start').classList.add('hidden');
-        document.getElementById('quiz-questions').classList.remove('hidden');
-        
-        loadQuestion();
-    } else {
-        restartQuiz();
-    }
+    quizStarted = true;
+    currentQuestionIndex = 0;
+    quizScore = 0;
+    userAnswers = [];
+
+    getEl('quiz-start')?.classList.add('hidden');
+    getEl('quiz-results')?.classList.add('hidden');
+    getEl('quiz-questions')?.classList.remove('hidden');
+
+    loadQuestion();
+
+    setTimeout(() => {
+        getEl('quiz-container')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }, 100);
 }
 
 function loadQuestion() {
     const question = quizQuestions[currentQuestionIndex];
-    const questionContent = document.getElementById('question-content');
-    
+    const questionContent = getEl('question-content');
+
+    if (!question || !questionContent) return;
+
     questionContent.innerHTML = `
         <div class="mb-6">
             <h4 class="text-lg font-semibold text-gray-900 mb-4">${question.question}</h4>
+
             <div class="space-y-3">
                 ${question.options.map((option, index) => `
-                    <label class="quiz-option flex items-center p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
-                        <input type="radio" name="quiz-answer" value="${index}" class="mr-3">
+                    <label class="quiz-option flex items-start gap-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50">
+                        <input type="radio" name="quiz-answer" value="${index}" class="mt-1 shrink-0">
                         <span class="text-gray-700">${option}</span>
                     </label>
                 `).join('')}
             </div>
         </div>
+
         <div id="explanation" class="hidden p-4 bg-blue-50 rounded-lg">
             <p class="text-blue-800 text-sm">${question.explanation}</p>
         </div>
     `;
-    
-    // Update question counter
-    document.getElementById('current-question').textContent = currentQuestionIndex + 1;
-    
-    // Update button states
-    document.getElementById('prev-btn').disabled = currentQuestionIndex === 0;
-    document.getElementById('next-btn').textContent = currentQuestionIndex === quizQuestions.length - 1 ? 'Testi Bitir' : 'Sonraki';
-    
-    // Add event listeners to options
+
+    safeSetText('current-question', currentQuestionIndex + 1);
+    safeSetText('quiz-score', quizScore);
+
+    const prevBtn = getEl('prev-btn');
+    const nextBtn = getEl('next-btn');
+
+    if (prevBtn) {
+        prevBtn.disabled = currentQuestionIndex === 0;
+    }
+
+    if (nextBtn) {
+        nextBtn.textContent =
+            currentQuestionIndex === quizQuestions.length - 1
+                ? 'Testi Bitir'
+                : 'Sonraki';
+    }
+
     document.querySelectorAll('input[name="quiz-answer"]').forEach(input => {
-        input.addEventListener('change', function() {
+        input.addEventListener('change', function () {
+            const selectedValue = parseInt(this.value);
+
+            userAnswers[currentQuestionIndex] = selectedValue;
+
+            document.querySelectorAll('.quiz-option').forEach(opt => {
+                opt.classList.remove('selected', 'correct', 'incorrect');
+            });
+
             const selectedOption = this.closest('.quiz-option');
-            document.querySelectorAll('.quiz-option').forEach(opt => opt.classList.remove('selected'));
-            selectedOption.classList.add('selected');
-            
-            // Show explanation
-            document.getElementById('explanation').classList.remove('hidden');
-            
-            // Store answer
-            userAnswers[currentQuestionIndex] = parseInt(this.value);
+            if (selectedOption) {
+                selectedOption.classList.add('selected');
+            }
+
+            const explanation = getEl('explanation');
+            if (explanation) {
+                explanation.classList.remove('hidden');
+            }
         });
     });
-    
-    // If user already answered this question, restore selection
-    if (userAnswers[currentQuestionIndex] !== undefined) {
-        const correspondingInput = document.querySelector(`input[value="${userAnswers[currentQuestionIndex]}"]`);
-        if (correspondingInput) {
-            correspondingInput.checked = true;
-            correspondingInput.closest('.quiz-option').classList.add('selected');
-            document.getElementById('explanation').classList.remove('hidden');
-        }
+
+    restoreSelectedAnswer();
+}
+
+function safeSetText(id, value) {
+    const el = getEl(id);
+    if (el) el.textContent = value;
+}
+
+function restoreSelectedAnswer() {
+    const previousAnswer = userAnswers[currentQuestionIndex];
+
+    if (previousAnswer === undefined) return;
+
+    const input = document.querySelector(`input[name="quiz-answer"][value="${previousAnswer}"]`);
+
+    if (!input) return;
+
+    input.checked = true;
+
+    const option = input.closest('.quiz-option');
+    if (option) {
+        option.classList.add('selected');
     }
+
+    getEl('explanation')?.classList.remove('hidden');
 }
 
 function nextQuestion() {
-    // Check if user answered the current question
     if (userAnswers[currentQuestionIndex] === undefined) {
         alert('Lütfen bir cevap seçin.');
         return;
     }
-    
-    // Check if it's the last question
+
     if (currentQuestionIndex === quizQuestions.length - 1) {
         finishQuiz();
-    } else {
-        currentQuestionIndex++;
-        loadQuestion();
+        return;
     }
-}
 
-function previousQuestion() {
-    if (currentQuestionIndex > 0) {
-        currentQuestionIndex--;
-        loadQuestion();
-    }
-}
+    currentQuestionIndex++;
+    loadQuestion();
 
-function finishQuiz() {
-    // Calculate score
-    quizScore = 0;
-    userAnswers.forEach((answer, index) => {
-        if (answer === quizQuestions[index].correct) {
-            quizScore++;
-        }
-    });
-    
-    // Show results
-    document.getElementById('quiz-questions').classList.add('hidden');
-    document.getElementById('quiz-results').classList.remove('hidden');
-    
-    // Update score display
-    document.getElementById('final-score').textContent = `${quizScore}/${quizQuestions.length}`;
-    
-    // Update result message and emoji based on score
-    const percentage = (quizScore / quizQuestions.length) * 100;
-    let message, emoji;
-    
-    if (percentage >= 80) {
-        message = "Mükemmel! Finansal okuryazarlık seviyeniz çok yüksek.";
-        emoji = "🏆";
-    } else if (percentage >= 60) {
-        message = "Tebrikler! Finansal bilginiz oldukça iyi seviyede.";
-        emoji = "🎉";
-    } else if (percentage >= 40) {
-        message = "İyi bir başlangıç! Biraz daha çalışmanız gerekiyor.";
-        emoji = "📚";
-    } else {
-        message = "Finansal okuryazarlığınızı geliştirmeniz gerekiyor.";
-        emoji = "💪";
-    }
-    
-    document.getElementById('result-message').textContent = message;
-    document.getElementById('result-emoji').textContent = emoji;
-    
-    // Animate results
-    anime({
-        targets: '#quiz-results > *',
-        translateY: [30, 0],
-        opacity: [0, 1],
-        duration: 600,
-        easing: 'easeOutExpo',
-        delay: anime.stagger(100)
-    });
-}
-
-function restartQuiz() {
-    // Reset quiz state
-    currentQuestionIndex = 0;
-    quizScore = 0;
-    userAnswers = [];
-    quizStarted = false;
-    
-    // Hide results and show start screen
-    document.getElementById('quiz-results').classList.add('hidden');
-    document.getElementById('quiz-questions').classList.add('hidden');
-    document.getElementById('quiz-start').classList.remove('hidden');
-    
-    // Reset button states
-    document.getElementById('prev-btn').disabled = true;
-    document.getElementById('next-btn').textContent = 'Sonraki';
-}
-
-function shareResults() {
-    const score = quizScore;
-    const total = quizQuestions.length;
-    const percentage = Math.round((score / total) * 100);
-    
-    const shareText = `Finansal Bilgi Testi sonucum: ${score}/${total} (${percentage}%) - Finansal Analiz Platformu'nda bilginizi test edin!`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: 'Finansal Bilgi Testi Sonucum',
-            text: shareText,
-            url: window.location.href
-        });
-    } else {
-        // Fallback for browsers that don't support Web Share API
-        navigator.clipboard.writeText(shareText + ' ' + window.location.href).then(() => {
-            showNotification('Sonuç kopyalandı! Yapıştırarak paylaşabilirsiniz.', 'success');
-        });
-    }
-}
-
-// Utility Functions
-function scrollToSection(sectionId) {
-    const section = document.getElementById(sectionId);
-    if (section) {
-        section.scrollIntoView({
+    if (isMobileScreen()) {
+        getEl('quiz-container')?.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
         });
     }
 }
 
-function scrollToContent() {
-    document.getElementById('basics').scrollIntoView({
+function previousQuestion() {
+    if (currentQuestionIndex <= 0) return;
+
+    currentQuestionIndex--;
+    loadQuestion();
+
+    if (isMobileScreen()) {
+        getEl('quiz-container')?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+        });
+    }
+}
+
+function finishQuiz() {
+    quizScore = 0;
+
+    userAnswers.forEach((answer, index) => {
+        if (answer === quizQuestions[index].correct) {
+            quizScore++;
+        }
+    });
+
+    getEl('quiz-questions')?.classList.add('hidden');
+    getEl('quiz-results')?.classList.remove('hidden');
+
+    safeSetText('final-score', `${quizScore}/${quizQuestions.length}`);
+
+    const percentage = (quizScore / quizQuestions.length) * 100;
+
+    let message = '';
+    let emoji = '';
+
+    if (percentage >= 80) {
+        message = "Mükemmel! Finansal okuryazarlık seviyeniz çok yüksek.";
+        emoji = "🏆";
+    } else if (percentage >= 60) {
+        message = "Tebrikler! Finansal bilginiz iyi seviyede.";
+        emoji = "🎉";
+    } else if (percentage >= 40) {
+        message = "İyi bir başlangıç. Temel kavramları biraz daha pekiştirmeniz faydalı olur.";
+        emoji = "📚";
+    } else {
+        message = "Finansal okuryazarlığınızı geliştirmeniz gerekiyor. Rehberdeki temel kavramları tekrar inceleyebilirsiniz.";
+        emoji = "💪";
+    }
+
+    safeSetText('result-message', message);
+    safeSetText('result-emoji', emoji);
+
+    safeAnime({
+        targets: '#quiz-results > *',
+        translateY: [20, 0],
+        opacity: [0, 1],
+        duration: 500,
+        easing: 'easeOutExpo',
+        delay: anime.stagger(80)
+    });
+
+    getEl('quiz-container')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start'
     });
 }
 
+function restartQuiz() {
+    quizStarted = false;
+    currentQuestionIndex = 0;
+    quizScore = 0;
+    userAnswers = [];
+
+    getEl('quiz-results')?.classList.add('hidden');
+    getEl('quiz-questions')?.classList.add('hidden');
+    getEl('quiz-start')?.classList.remove('hidden');
+
+    const prevBtn = getEl('prev-btn');
+    const nextBtn = getEl('next-btn');
+
+    if (prevBtn) prevBtn.disabled = true;
+    if (nextBtn) nextBtn.textContent = 'Sonraki';
+
+    getEl('quiz-container')?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function shareResults() {
+    const score = quizScore;
+    const total = quizQuestions.length;
+    const percentage = Math.round((score / total) * 100);
+
+    const shareText =
+        `Finansal Bilgi Testi sonucum: ${score}/${total} (${percentage}%). Finansal Analiz Platformu'nda bilginizi test edin.`;
+
+    if (navigator.share) {
+        navigator.share({
+            title: 'Finansal Bilgi Testi Sonucum',
+            text: shareText,
+            url: window.location.href
+        }).catch(() => {
+            copyShareText(shareText);
+        });
+    } else {
+        copyShareText(shareText);
+    }
+}
+
+function copyShareText(text) {
+    const fullText = `${text} ${window.location.href}`;
+
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(fullText).then(() => {
+            showNotification('Sonuç kopyalandı. Yapıştırarak paylaşabilirsiniz.', 'success');
+        }).catch(() => {
+            showNotification('Kopyalama desteklenmiyor.', 'error');
+        });
+    } else {
+        showNotification('Bu tarayıcıda paylaşım desteklenmiyor.', 'error');
+    }
+}
+
+// =========================
+// SCROLL HELPERS
+// =========================
+function scrollToSection(sectionId) {
+    const section = getEl(sectionId);
+
+    if (!section) return;
+
+    section.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
+    });
+}
+
+function scrollToContent() {
+    scrollToSection('basics');
+}
+
+// =========================
+// NOTIFICATION
+// =========================
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
-    
-    notification.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+
+    const bgColor =
+        type === 'success'
+            ? 'bg-green-500'
+            : type === 'error'
+                ? 'bg-red-500'
+                : 'bg-blue-500';
+
+    notification.className =
+        `fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+
     notification.textContent = message;
-    
+
     document.body.appendChild(notification);
-    
-    anime({
+
+    safeAnime({
         targets: notification,
-        translateX: [300, 0],
+        translateY: [-10, 0],
         opacity: [0, 1],
-        duration: 300,
+        duration: 250,
         easing: 'easeOutExpo'
     });
-    
+
     setTimeout(() => {
-        anime({
-            targets: notification,
-            translateX: [0, 300],
-            opacity: [1, 0],
-            duration: 300,
-            easing: 'easeInExpo',
-            complete: () => notification.remove()
-        });
+        if (typeof anime !== 'undefined') {
+            anime({
+                targets: notification,
+                translateY: [0, -10],
+                opacity: [1, 0],
+                duration: 250,
+                easing: 'easeInExpo',
+                complete: () => notification.remove()
+            });
+        } else {
+            notification.remove();
+        }
     }, 3000);
 }
 
-// Interaction Functions
+// =========================
+// INTERACTIONS
+// =========================
 function initializeInteractions() {
-    // Smooth scrolling for navigation buttons
-    document.querySelectorAll('button[onclick^="scrollToSection"]').forEach(button => {
-        button.addEventListener('click', function() {
-            const sectionId = this.getAttribute('onclick').match(/'([^']+)'/)[1];
-            scrollToSection(sectionId);
-        });
-    });
-    
-    // Add hover effects to guide cards
-    document.querySelectorAll('.guide-card').forEach(card => {
-        card.addEventListener('mouseenter', function() {
-            anime({
-                targets: this,
-                scale: 1.02,
-                duration: 200,
-                easing: 'easeOutQuad'
+    // Mobilde hover-scale animasyonu sorun çıkarabildiği için sadece desktop’ta çalıştırıyoruz.
+    if (!isMobileScreen() && typeof anime !== 'undefined') {
+        document.querySelectorAll('.guide-card').forEach(card => {
+            card.addEventListener('mouseenter', function () {
+                anime({
+                    targets: this,
+                    scale: 1.01,
+                    duration: 180,
+                    easing: 'easeOutQuad'
+                });
+            });
+
+            card.addEventListener('mouseleave', function () {
+                anime({
+                    targets: this,
+                    scale: 1,
+                    duration: 180,
+                    easing: 'easeOutQuad'
+                });
             });
         });
-        
-        card.addEventListener('mouseleave', function() {
-            anime({
-                targets: this,
-                scale: 1,
-                duration: 200,
-                easing: 'easeOutQuad'
-            });
-        });
-    });
-    
-    // Add click effects to buttons
+    }
+
     document.querySelectorAll('button').forEach(button => {
-        button.addEventListener('click', function() {
-            anime({
+        button.addEventListener('click', function () {
+            safeAnime({
                 targets: this,
-                scale: [1, 0.95, 1],
-                duration: 150,
+                scale: [1, 0.98, 1],
+                duration: 120,
                 easing: 'easeInOutQuad'
             });
         });
     });
 }
 
-// Keyboard Navigation
-document.addEventListener('keydown', function(e) {
-    if (quizStarted && !document.getElementById('quiz-results').classList.contains('hidden')) {
-        if (e.key === 'Enter') {
-            if (currentQuestionIndex < quizQuestions.length - 1) {
-                nextQuestion();
-            } else {
-                finishQuiz();
-            }
-        }
-        
-        if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
-            previousQuestion();
-        }
-        
-        if (e.key === 'ArrowRight' && currentQuestionIndex < quizQuestions.length - 1) {
-            nextQuestion();
-        }
-        
-        // Number keys for answer selection
-        if (e.key >= '1' && e.key <= '4') {
-            const optionIndex = parseInt(e.key) - 1;
-            const optionInputs = document.querySelectorAll('input[name="quiz-answer"]');
-            if (optionInputs[optionIndex]) {
-                optionInputs[optionIndex].click();
-            }
+// =========================
+// KEYBOARD NAVIGATION
+// =========================
+document.addEventListener('keydown', function (e) {
+    const questionsPanel = getEl('quiz-questions');
+    const resultsPanel = getEl('quiz-results');
+
+    const quizQuestionsVisible =
+        quizStarted &&
+        questionsPanel &&
+        !questionsPanel.classList.contains('hidden') &&
+        resultsPanel &&
+        resultsPanel.classList.contains('hidden');
+
+    if (!quizQuestionsVisible) return;
+
+    if (e.key === 'Enter') {
+        nextQuestion();
+    }
+
+    if (e.key === 'ArrowLeft' && currentQuestionIndex > 0) {
+        previousQuestion();
+    }
+
+    if (e.key === 'ArrowRight') {
+        nextQuestion();
+    }
+
+    if (e.key >= '1' && e.key <= '4') {
+        const optionIndex = parseInt(e.key) - 1;
+        const optionInputs = document.querySelectorAll('input[name="quiz-answer"]');
+
+        if (optionInputs[optionIndex]) {
+            optionInputs[optionIndex].click();
         }
     }
 });
 
-// Export functions for global access
+// =========================
+// GLOBAL EXPORTS
+// =========================
 window.toggleAccordion = toggleAccordion;
+
 window.startQuiz = startQuiz;
 window.nextQuestion = nextQuestion;
 window.previousQuestion = previousQuestion;
 window.restartQuiz = restartQuiz;
 window.shareResults = shareResults;
+
 window.scrollToSection = scrollToSection;
 window.scrollToContent = scrollToContent;

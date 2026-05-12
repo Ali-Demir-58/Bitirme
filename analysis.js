@@ -1,7 +1,13 @@
 // Finansal Analiz Platformu - Analysis JavaScript
 
+// =========================
+// GLOBAL STATE
+// =========================
 let currentTab = 'portfolio';
-let portfolioChart, simulationChart, riskChart, expenseChart;
+let portfolioChart = null;
+let simulationChart = null;
+let riskChart = null;
+let expenseChart = null;
 
 let marketStocks = [];
 let marketGoldPrice = null;
@@ -19,17 +25,6 @@ let portfolioData = {
 
 let budgetData = {
     income: 25000,
-
-    ratios: {
-        'Konut': 0.35,
-        'Gıda': 0.20,
-        'Ulaşım': 0.10,
-        'Eğlence': 0.10,
-        'Eğitim': 0.10,
-        'Sağlık': 0.05,
-        'Diğer': 0.10
-    },
-
     expenses: [
         { category: 'Konut', description: 'Ev kira ve faturaları', amount: 8500 },
         { category: 'Gıda', description: 'Market ve restoran', amount: 4200 },
@@ -42,7 +37,6 @@ let budgetData = {
 // =========================
 // INIT
 // =========================
-
 document.addEventListener('DOMContentLoaded', async function () {
     await loadMarketDataForAnalysis();
     refreshPortfolioPrices();
@@ -52,19 +46,65 @@ document.addEventListener('DOMContentLoaded', async function () {
     updateHoldingsTable();
     updatePortfolioDisplay();
     updateBudgetDashboard();
+
+    openTabFromHash();
+
+    // Grafiklerin mobilde doğru ölçü alması için kısa gecikme
+    setTimeout(resizeAllCharts, 250);
 });
+
+// =========================
+// SAFE HELPERS
+// =========================
+function getEl(id) {
+    return document.getElementById(id);
+}
+
+function safeText(id, value) {
+    const el = getEl(id);
+    if (el) el.textContent = value;
+}
+
+function formatTL(value, digits = 0) {
+    return `₺${Number(value || 0).toLocaleString('tr-TR', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    })}`;
+}
+
+function formatNumber(value, digits = 2) {
+    if (value === null || value === undefined || Number.isNaN(Number(value))) return '--';
+
+    return Number(value).toLocaleString('tr-TR', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits
+    });
+}
+
+function resizeAllCharts() {
+    [portfolioChart, simulationChart, riskChart, expenseChart].forEach(chart => {
+        if (chart && typeof chart.resize === 'function') {
+            chart.resize();
+        }
+    });
+}
 
 // =========================
 // MARKET DATA
 // =========================
-
 async function loadMarketDataForAnalysis() {
     try {
-        const res = await fetch('http://localhost:3000/api/market-data');
+        const res = await fetch('/api/market-data');
+
+        if (!res.ok) {
+            throw new Error(`API hatası: ${res.status}`);
+        }
+
         const data = await res.json();
 
-        marketStocks = data.stocks || [];
+        marketStocks = Array.isArray(data.stocks) ? data.stocks : [];
         marketGoldPrice = data.gold?.['ALIŞ'] ? Number(data.gold['ALIŞ']) : null;
+
     } catch (err) {
         console.error('Piyasa verisi alınamadı:', err);
         marketStocks = [];
@@ -87,9 +127,7 @@ function isGoldSymbol(symbol) {
 function findMarketStock(symbol) {
     const cleanSymbol = normalizeSymbol(symbol);
 
-    return marketStocks.find(
-        item => normalizeSymbol(item.symbol) === cleanSymbol
-    );
+    return marketStocks.find(item => normalizeSymbol(item.symbol) === cleanSymbol);
 }
 
 function refreshPortfolioPrices() {
@@ -116,24 +154,32 @@ function refreshPortfolioPrices() {
 // =========================
 // TAB MANAGEMENT
 // =========================
-
 function switchTab(tabName) {
     document.querySelectorAll('[id^="content-"]').forEach(section => {
         section.classList.add('hidden');
     });
 
-    document.getElementById(`content-${tabName}`).classList.remove('hidden');
+    const selectedContent = getEl(`content-${tabName}`);
+    if (!selectedContent) return;
+
+    selectedContent.classList.remove('hidden');
 
     document.querySelectorAll('[id^="tab-"]').forEach(button => {
         button.classList.remove('active');
         button.classList.add('bg-gray-100', 'text-gray-700');
     });
 
-    const activeTab = document.getElementById(`tab-${tabName}`);
-    activeTab.classList.add('active');
-    activeTab.classList.remove('bg-gray-100', 'text-gray-700');
+    const activeTab = getEl(`tab-${tabName}`);
+    if (activeTab) {
+        activeTab.classList.add('active');
+        activeTab.classList.remove('bg-gray-100', 'text-gray-700');
+    }
 
     currentTab = tabName;
+
+    if (history.pushState) {
+        history.replaceState(null, '', `#${tabName}`);
+    }
 
     setTimeout(() => {
         if (tabName === 'portfolio') {
@@ -145,20 +191,31 @@ function switchTab(tabName) {
         } else if (tabName === 'budget') {
             initializeExpenseChart();
         }
-    }, 100);
+
+        resizeAllCharts();
+    }, 200);
+}
+
+function openTabFromHash() {
+    const hash = window.location.hash.replace('#', '').trim();
+
+    const allowedTabs = ['portfolio', 'simulation', 'risk', 'budget'];
+
+    if (allowedTabs.includes(hash)) {
+        switchTab(hash);
+    }
 }
 
 // =========================
 // CHARTS
 // =========================
-
 function initializeCharts() {
     initializePortfolioCharts();
 }
 
 function initializePortfolioCharts() {
-    const chartDom = document.getElementById('portfolio-pie-chart');
-    if (!chartDom) return;
+    const chartDom = getEl('portfolio-pie-chart');
+    if (!chartDom || typeof echarts === 'undefined') return;
 
     if (portfolioChart) {
         portfolioChart.dispose();
@@ -171,19 +228,17 @@ function initializePortfolioCharts() {
         name: holding.symbol
     }));
 
-    const pieOption = {
+    pieChart.setOption({
         tooltip: {
             trigger: 'item',
             formatter: function (params) {
-                return `${params.name}: ₺${Number(params.value).toLocaleString('tr-TR', {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2
-                })} (${params.percent}%)`;
+                return `${params.name}: ${formatTL(params.value, 2)} (${params.percent}%)`;
             }
         },
         legend: {
-            orient: 'vertical',
-            left: 'left',
+            orient: window.innerWidth < 768 ? 'horizontal' : 'vertical',
+            left: window.innerWidth < 768 ? 'center' : 'left',
+            bottom: window.innerWidth < 768 ? 0 : undefined,
             textStyle: {
                 color: '#6b7280'
             }
@@ -191,21 +246,21 @@ function initializePortfolioCharts() {
         series: [{
             name: 'Portföy',
             type: 'pie',
-            radius: ['40%', '70%'],
-            avoidLabelOverlap: false,
+            radius: window.innerWidth < 768 ? ['35%', '62%'] : ['40%', '70%'],
+            center: window.innerWidth < 768 ? ['50%', '45%'] : ['55%', '50%'],
+            avoidLabelOverlap: true,
             itemStyle: {
                 borderRadius: 10,
                 borderColor: '#fff',
                 borderWidth: 2
             },
             label: {
-                show: false,
-                position: 'center'
+                show: false
             },
             emphasis: {
                 label: {
                     show: true,
-                    fontSize: '18',
+                    fontSize: 16,
                     fontWeight: 'bold'
                 }
             },
@@ -214,25 +269,23 @@ function initializePortfolioCharts() {
             },
             data: pieData
         }]
-    };
+    });
 
-    pieChart.setOption(pieOption);
     portfolioChart = pieChart;
 }
 
 function initializeSimulationChart() {
-    // Simülasyon grafiği artık runSimulation() çalışınca oluşuyor.
+    // Simülasyon grafiği runSimulation() çalışınca oluşur.
+    if (simulationChart) {
+        simulationChart.resize();
+    }
 }
 
 function initializeRiskChart() {
-    if (riskChart) {
-        riskChart.dispose();
-    }
+    const chartDom = getEl('risk-allocation-chart');
+    if (!chartDom) return;
 
-    const chartDom = document.getElementById('risk-allocation-chart');
-    if (chartDom) {
-        calculateRiskProfile();
-    }
+    calculateRiskProfile();
 }
 
 function initializeExpenseChart() {
@@ -242,7 +295,6 @@ function initializeExpenseChart() {
 // =========================
 // PORTFOLIO DISPLAY
 // =========================
-
 function calculatePortfolioMetrics() {
     const totalValue = portfolioData.holdings.reduce((sum, h) => {
         return sum + h.amount * h.currentPrice;
@@ -272,9 +324,9 @@ function calculatePortfolioMetrics() {
 
         if (marketStock && marketStock.high && marketStock.low && marketStock.last) {
             const intradayVolatility =
-                ((marketStock.high - marketStock.low) / marketStock.last) * 100;
+                ((Number(marketStock.high) - Number(marketStock.low)) / Number(marketStock.last)) * 100;
 
-            const dailyMovement = Math.abs(Number(marketStock.change || 0)) * 100;
+            const dailyMovement = Math.abs(Number(marketStock.change || 0));
 
             weightedVolatility += weight * intradayVolatility;
             weightedMovement += weight * dailyMovement;
@@ -327,39 +379,27 @@ function updatePortfolioDisplay() {
     portfolioData.riskScore = metrics.riskScore;
     portfolioData.diversification = metrics.diversification;
 
-    document.getElementById('total-value').textContent =
-        `₺${totalValue.toLocaleString('tr-TR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-
-    document.getElementById('total-change').textContent =
-        `${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(2)}%`;
-
-    document.getElementById('monthly-return').textContent =
-        `${totalProfit >= 0 ? '+' : ''}₺${totalProfit.toLocaleString('tr-TR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}`;
-
-    document.getElementById('risk-score').textContent = metrics.riskScore.toFixed(1);
-    document.getElementById('diversification').textContent = `${metrics.diversification.toFixed(0)}%`;
+    safeText('total-value', formatTL(totalValue, 2));
+    safeText('total-change', `${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(2)}%`);
+    safeText('monthly-return', `${totalProfit >= 0 ? '+' : ''}${formatTL(totalProfit, 2)}`);
+    safeText('risk-score', metrics.riskScore.toFixed(1));
+    safeText('diversification', `${metrics.diversification.toFixed(0)}%`);
 
     const riskLabel = document.querySelector('#risk-score')?.nextElementSibling?.nextElementSibling;
     if (riskLabel) {
         riskLabel.textContent = risk.text;
-        riskLabel.className = `text-xs ${risk.color}`;
+        riskLabel.className = `text-sm font-medium ${risk.color}`;
     }
 
     const divLabel = document.querySelector('#diversification')?.nextElementSibling?.nextElementSibling;
     if (divLabel) {
         divLabel.textContent = diversification.text;
-        divLabel.className = `text-xs ${diversification.color}`;
+        divLabel.className = `text-sm font-medium ${diversification.color}`;
     }
 }
 
 function updateHoldingsTable() {
-    const tbody = document.getElementById('holdings-table');
+    const tbody = getEl('holdings-table');
     if (!tbody) return;
 
     tbody.innerHTML = '';
@@ -375,26 +415,21 @@ function updateHoldingsTable() {
         row.className = 'border-b border-gray-100 hover:bg-gray-50';
 
         row.innerHTML = `
-            <td class="py-3 px-4">
+            <td class="py-3 px-4 whitespace-nowrap">
                 <div class="flex items-center">
                     <span class="font-medium text-gray-900">${holding.symbol}</span>
                     <span class="ml-2 text-sm text-gray-500">${holding.name}</span>
                 </div>
             </td>
-            <td class="text-right py-3 px-4">${holding.amount}</td>
-            <td class="text-right py-3 px-4">₺${Number(holding.buyPrice).toFixed(2)}</td>
-            <td class="text-right py-3 px-4">₺${Number(holding.currentPrice).toFixed(2)}</td>
-            <td class="text-right py-3 px-4 font-medium">
-                ₺${currentValue.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </td>
-            <td class="text-right py-3 px-4 ${profit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium">
-                ${profit >= 0 ? '+' : ''}₺${profit.toLocaleString('tr-TR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}
+            <td class="text-right py-3 px-4 whitespace-nowrap">${holding.amount}</td>
+            <td class="text-right py-3 px-4 whitespace-nowrap">${formatTL(holding.buyPrice, 2)}</td>
+            <td class="text-right py-3 px-4 whitespace-nowrap">${formatTL(holding.currentPrice, 2)}</td>
+            <td class="text-right py-3 px-4 font-medium whitespace-nowrap">${formatTL(currentValue, 2)}</td>
+            <td class="text-right py-3 px-4 ${profit >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap">
+                ${profit >= 0 ? '+' : ''}${formatTL(profit, 2)}
                 (${profit >= 0 ? '+' : ''}${profitPercent}%)
             </td>
-            <td class="text-center py-3 px-4">
+            <td class="text-center py-3 px-4 whitespace-nowrap">
                 <button onclick="sellInvestment('${holding.symbol}')" class="text-red-600 hover:text-red-800 font-medium">Sat</button>
             </td>
         `;
@@ -406,7 +441,6 @@ function updateHoldingsTable() {
 // =========================
 // ADD / SELL INVESTMENT
 // =========================
-
 function addInvestment() {
     const stockOptions = marketStocks.map(stock => `
         <option value="${stock.symbol} ${stock.name}">${stock.symbol} - ${stock.name}</option>
@@ -447,7 +481,7 @@ function addInvestment() {
                 </div>
             </div>
 
-            <div class="flex space-x-4 mt-6">
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
                 <button type="button" onclick="saveInvestment()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
                     Kaydet
                 </button>
@@ -462,8 +496,8 @@ function addInvestment() {
 }
 
 function handleAssetTypeChange() {
-    const type = document.getElementById('asset-type')?.value;
-    const symbolInput = document.getElementById('asset-symbol');
+    const type = getEl('asset-type')?.value;
+    const symbolInput = getEl('asset-symbol');
 
     if (!symbolInput) return;
 
@@ -477,11 +511,11 @@ function handleAssetTypeChange() {
 async function saveInvestment() {
     await loadMarketDataForAnalysis();
 
-    const symbolInput = document.getElementById('asset-symbol').value;
+    const symbolInput = getEl('asset-symbol')?.value || '';
     const symbol = normalizeSymbol(symbolInput);
 
-    const amount = parseFloat(document.getElementById('asset-amount').value);
-    const price = parseFloat(document.getElementById('asset-price').value);
+    const amount = parseFloat(getEl('asset-amount')?.value);
+    const price = parseFloat(getEl('asset-price')?.value);
 
     if (!symbol || !amount || !price) {
         alert('Lütfen tüm alanları doldurun.');
@@ -502,15 +536,13 @@ async function saveInvestment() {
         assetName = marketStock?.name || symbol;
     }
 
-    const newInvestment = {
+    portfolioData.holdings.push({
         symbol: finalSymbol,
         name: assetName,
-        amount: amount,
+        amount,
         buyPrice: price,
-        currentPrice: currentPrice
-    };
-
-    portfolioData.holdings.push(newInvestment);
+        currentPrice
+    });
 
     refreshPortfolioPrices();
     updateHoldingsTable();
@@ -526,9 +558,7 @@ function sellInvestment(symbol) {
 
     if (!holding) return;
 
-    const input = prompt(
-        `${symbol} için kaç adet satmak istiyorsunuz?\nMevcut adet: ${holding.amount}`
-    );
+    const input = prompt(`${symbol} için kaç adet satmak istiyorsunuz?\nMevcut adet: ${holding.amount}`);
 
     if (input === null) return;
 
@@ -560,7 +590,6 @@ function sellInvestment(symbol) {
 // =========================
 // SIMULATION
 // =========================
-
 function getRiskParams(risk) {
     const profiles = {
         very_conservative: { mu: 0.08, sigma: 0.06 },
@@ -594,18 +623,11 @@ function percentile(arr, p) {
     return sorted[lower] + (sorted[upper] - sorted[lower]) * (index - lower);
 }
 
-function formatTL(value) {
-    return `₺${Number(value).toLocaleString('tr-TR', {
-        minimumFractionDigits: 0,
-        maximumFractionDigits: 0
-    })}`;
-}
-
 function runSimulation() {
-    const initialAmount = parseFloat(document.getElementById('simulation-amount').value);
-    const years = parseInt(document.getElementById('simulation-period').value);
-    const risk = document.getElementById('simulation-risk').value;
-    const simulationCount = parseInt(document.getElementById('simulation-count').value);
+    const initialAmount = parseFloat(getEl('simulation-amount')?.value);
+    const years = parseInt(getEl('simulation-period')?.value);
+    const risk = getEl('simulation-risk')?.value;
+    const simulationCount = parseInt(getEl('simulation-count')?.value);
 
     if (!initialAmount || initialAmount <= 0) {
         alert('Lütfen geçerli bir başlangıç tutarı girin.');
@@ -651,9 +673,7 @@ function runSimulation() {
     const expected = finalValues.reduce((sum, x) => sum + x, 0) / finalValues.length;
 
     const losses = finalValues.map(value => Math.max(0, initialAmount - value));
-
-    const lossProbability =
-        (losses.filter(loss => loss > 0).length / losses.length) * 100;
+    const lossProbability = (losses.filter(loss => loss > 0).length / losses.length) * 100;
 
     const var95 = percentile(losses, 95);
     const worstLosses = losses.filter(loss => loss >= var95);
@@ -662,29 +682,31 @@ function runSimulation() {
         ? worstLosses.reduce((sum, loss) => sum + loss, 0) / worstLosses.length
         : var95;
 
-    document.getElementById('simulation-results').classList.remove('hidden');
+    getEl('simulation-results')?.classList.remove('hidden');
 
-    document.getElementById('best-scenario').textContent = formatTL(p95);
-    document.getElementById('likely-scenario').textContent = formatTL(median);
-    document.getElementById('worst-scenario').textContent = formatTL(p5);
+    safeText('best-scenario', formatTL(p95));
+    safeText('likely-scenario', formatTL(median));
+    safeText('worst-scenario', formatTL(p5));
 
-    document.getElementById('loss-probability').textContent = `%${lossProbability.toFixed(1)}`;
-    document.getElementById('expected-final-value').textContent = formatTL(expected);
-    document.getElementById('simulation-var').textContent = formatTL(var95);
-    document.getElementById('simulation-cvar').textContent = formatTL(cvar95);
+    safeText('loss-probability', `%${lossProbability.toFixed(1)}`);
+    safeText('expected-final-value', formatTL(expected));
+    safeText('simulation-var', formatTL(var95));
+    safeText('simulation-cvar', formatTL(cvar95));
 
     const minReturn = ((p5 - initialAmount) / initialAmount) * 100;
     const maxReturn = ((p95 - initialAmount) / initialAmount) * 100;
 
-    document.getElementById('min-return').textContent = `${minReturn.toFixed(1)}%`;
-    document.getElementById('max-return').textContent = `${maxReturn >= 0 ? '+' : ''}${maxReturn.toFixed(1)}%`;
+    safeText('min-return', `${minReturn.toFixed(1)}%`);
+    safeText('max-return', `${maxReturn >= 0 ? '+' : ''}${maxReturn.toFixed(1)}%`);
 
     updateSimulationChart(pathsForChart, years);
+
+    setTimeout(resizeAllCharts, 200);
 }
 
 function updateSimulationChart(paths, years) {
-    const chartDom = document.getElementById('simulation-chart');
-    if (!chartDom) return;
+    const chartDom = getEl('simulation-chart');
+    if (!chartDom || typeof echarts === 'undefined') return;
 
     if (simulationChart) {
         simulationChart.dispose();
@@ -734,7 +756,7 @@ function updateSimulationChart(paths, years) {
         grid: {
             left: '3%',
             right: '4%',
-            bottom: '3%',
+            bottom: '5%',
             containLabel: true
         },
         xAxis: {
@@ -754,22 +776,24 @@ function updateSimulationChart(paths, years) {
 }
 
 function resetSimulation() {
-    document.getElementById('simulation-amount').value = '100000';
-    document.getElementById('simulation-period').value = '5';
-    document.getElementById('simulation-risk').value = 'balanced';
-    document.getElementById('simulation-count').value = '5000';
+    if (getEl('simulation-amount')) getEl('simulation-amount').value = '100000';
+    if (getEl('simulation-period')) getEl('simulation-period').value = '5';
+    if (getEl('simulation-risk')) getEl('simulation-risk').value = 'balanced';
+    if (getEl('simulation-count')) getEl('simulation-count').value = '5000';
 
-    document.getElementById('simulation-results').classList.add('hidden');
+    getEl('simulation-results')?.classList.add('hidden');
 
-    document.getElementById('best-scenario').textContent = '--';
-    document.getElementById('likely-scenario').textContent = '--';
-    document.getElementById('worst-scenario').textContent = '--';
-    document.getElementById('loss-probability').textContent = '--';
-    document.getElementById('expected-final-value').textContent = '--';
-    document.getElementById('simulation-var').textContent = '--';
-    document.getElementById('simulation-cvar').textContent = '--';
-    document.getElementById('min-return').textContent = '--';
-    document.getElementById('max-return').textContent = '--';
+    [
+        'best-scenario',
+        'likely-scenario',
+        'worst-scenario',
+        'loss-probability',
+        'expected-final-value',
+        'simulation-var',
+        'simulation-cvar',
+        'min-return',
+        'max-return'
+    ].forEach(id => safeText(id, '--'));
 
     if (simulationChart) {
         simulationChart.dispose();
@@ -780,7 +804,6 @@ function resetSimulation() {
 // =========================
 // RISK
 // =========================
-
 function calculateRiskProfile() {
     const allocations = [
         { key: 'stock', name: 'Hisse Senedi', value: getInputValue('risk-stock'), risk: 7 },
@@ -792,7 +815,7 @@ function calculateRiskProfile() {
     ];
 
     const total = allocations.reduce((sum, item) => sum + item.value, 0);
-    const warning = document.getElementById('risk-total-warning');
+    const warning = getEl('risk-total-warning');
 
     if (warning && Math.round(total) !== 100) {
         warning.classList.remove('hidden');
@@ -821,26 +844,23 @@ function calculateRiskProfile() {
     const diversification = getAllocationDiversification(activeClasses, maxAllocation);
     const suggestions = generateAllocationSuggestions(allocations, riskScore, maxAllocation, mainRisk);
 
-    const scoreEl = document.getElementById('allocation-risk-score');
-    const labelEl = document.getElementById('allocation-risk-label');
-    const divEl = document.getElementById('allocation-diversification');
-    const mainEl = document.getElementById('allocation-main-risk');
-    const suggestionList = document.getElementById('allocation-suggestions');
+    safeText('allocation-risk-score', `${riskScore.toFixed(1)} / 10`);
 
-    if (scoreEl) scoreEl.textContent = `${riskScore.toFixed(1)} / 10`;
-
+    const labelEl = getEl('allocation-risk-label');
     if (labelEl) {
         labelEl.textContent = riskLabel.text;
         labelEl.className = `text-sm font-semibold mt-1 ${riskLabel.color}`;
     }
 
+    const divEl = getEl('allocation-diversification');
     if (divEl) {
         divEl.textContent = diversification.text;
         divEl.className = `text-lg font-bold mt-1 ${diversification.color}`;
     }
 
-    if (mainEl) mainEl.textContent = `${mainRisk.name} (%${mainRisk.value})`;
+    safeText('allocation-main-risk', `${mainRisk.name} (%${mainRisk.value})`);
 
+    const suggestionList = getEl('allocation-suggestions');
     if (suggestionList) {
         suggestionList.innerHTML = suggestions.map(item => `<li>${item}</li>`).join('');
     }
@@ -849,7 +869,7 @@ function calculateRiskProfile() {
 }
 
 function getInputValue(id) {
-    return parseFloat(document.getElementById(id)?.value || 0);
+    return parseFloat(getEl(id)?.value || 0);
 }
 
 function getAllocationRiskLabel(score) {
@@ -903,6 +923,7 @@ function generateAllocationSuggestions(allocations, riskScore, maxAllocation, ma
 
     const gold = allocations.find(x => x.key === 'gold')?.value || 0;
     const fx = allocations.find(x => x.key === 'fx')?.value || 0;
+
     if (gold + fx > 50) {
         suggestions.push('Altın ve döviz ağırlığı yüksek; kur ve emtia hareketlerine duyarlılık artabilir.');
     }
@@ -911,8 +932,8 @@ function generateAllocationSuggestions(allocations, riskScore, maxAllocation, ma
 }
 
 function updateRiskAllocationChart(allocations) {
-    const chartDom = document.getElementById('risk-allocation-chart');
-    if (!chartDom) return;
+    const chartDom = getEl('risk-allocation-chart');
+    if (!chartDom || typeof echarts === 'undefined') return;
 
     if (riskChart) {
         riskChart.dispose();
@@ -933,13 +954,15 @@ function updateRiskAllocationChart(allocations) {
             formatter: '{b}: %{c}'
         },
         legend: {
-            orient: 'vertical',
-            left: 'left'
+            orient: window.innerWidth < 768 ? 'horizontal' : 'vertical',
+            left: window.innerWidth < 768 ? 'center' : 'left',
+            bottom: window.innerWidth < 768 ? 0 : undefined
         },
         series: [{
             name: 'Varlık Dağılımı',
             type: 'pie',
-            radius: ['40%', '70%'],
+            radius: window.innerWidth < 768 ? ['35%', '62%'] : ['40%', '70%'],
+            center: window.innerWidth < 768 ? ['50%', '45%'] : ['55%', '50%'],
             data
         }]
     });
@@ -950,7 +973,6 @@ function updateRiskAllocationChart(allocations) {
 // =========================
 // BUDGET
 // =========================
-
 function addExpense() {
     const modal = createModal('Yeni Gider Ekle', `
         <form>
@@ -979,7 +1001,7 @@ function addExpense() {
                 </div>
             </div>
 
-            <div class="flex space-x-4 mt-6">
+            <div class="flex flex-col sm:flex-row gap-4 mt-6">
                 <button type="button" onclick="saveExpense()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg">
                     Kaydet
                 </button>
@@ -994,9 +1016,9 @@ function addExpense() {
 }
 
 function saveExpense() {
-    const category = document.getElementById('expense-category').value;
-    const description = document.getElementById('expense-description').value || category;
-    const amount = parseFloat(document.getElementById('expense-amount').value);
+    const category = getEl('expense-category')?.value;
+    const description = getEl('expense-description')?.value || category;
+    const amount = parseFloat(getEl('expense-amount')?.value);
 
     if (!amount || amount <= 0) {
         alert('Lütfen geçerli gider tutarı girin.');
@@ -1011,7 +1033,7 @@ function saveExpense() {
 }
 
 function updateBudgetDashboard() {
-    const incomeInput = document.getElementById('monthly-income-input');
+    const incomeInput = getEl('monthly-income-input');
 
     if (incomeInput) {
         budgetData.income = parseFloat(incomeInput.value) || 0;
@@ -1021,29 +1043,25 @@ function updateBudgetDashboard() {
     const saving = budgetData.income - totalExpense;
     const savingRate = budgetData.income > 0 ? (saving / budgetData.income) * 100 : 0;
 
-    const incomeEl = document.getElementById('monthly-income');
-    const expenseEl = document.getElementById('monthly-expense');
-    const savingEl = document.getElementById('monthly-saving');
-    const savingRateEl = document.getElementById('saving-rate');
+    safeText('monthly-income', formatTL(budgetData.income));
+    safeText('monthly-expense', formatTL(totalExpense));
 
-    if (incomeEl) incomeEl.textContent = `₺${budgetData.income.toLocaleString('tr-TR')}`;
-    if (expenseEl) expenseEl.textContent = `₺${totalExpense.toLocaleString('tr-TR')}`;
-
+    const savingEl = getEl('monthly-saving');
     if (savingEl) {
-        savingEl.textContent = `₺${saving.toLocaleString('tr-TR')}`;
+        savingEl.textContent = formatTL(saving);
         savingEl.className = saving >= 0
-            ? 'text-3xl font-bold text-blue-600'
-            : 'text-3xl font-bold text-red-600';
+            ? 'text-3xl font-bold text-blue-600 break-words'
+            : 'text-3xl font-bold text-red-600 break-words';
     }
 
-    if (savingRateEl) savingRateEl.textContent = `%${savingRate.toFixed(1)} oranında`;
+    safeText('saving-rate', `%${savingRate.toFixed(1)} oranında`);
 
     updateExpenseChart();
     updateBudgetList();
 }
 
 function updateBudgetList() {
-    const container = document.getElementById('budget-list');
+    const container = getEl('budget-list');
     if (!container) return;
 
     container.innerHTML = '';
@@ -1054,7 +1072,7 @@ function updateBudgetList() {
             : 0;
 
         const div = document.createElement('div');
-        div.className = 'flex justify-between items-center p-4 bg-blue-50 rounded-lg';
+        div.className = 'flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 p-4 bg-blue-50 rounded-lg';
 
         div.innerHTML = `
             <div>
@@ -1065,9 +1083,9 @@ function updateBudgetList() {
                 </div>
             </div>
 
-            <div class="flex items-center space-x-4">
-                <div class="text-blue-600 font-bold">
-                    ₺${item.amount.toLocaleString('tr-TR')}
+            <div class="flex items-center justify-between sm:justify-end gap-4">
+                <div class="text-blue-600 font-bold whitespace-nowrap">
+                    ${formatTL(item.amount)}
                 </div>
 
                 <button onclick="removeExpense(${index})"
@@ -1082,7 +1100,7 @@ function updateBudgetList() {
 }
 
 function removeExpense(index) {
-    const confirmDelete = confirm("Bu gideri silmek istediğine emin misin?");
+    const confirmDelete = confirm('Bu gideri silmek istediğine emin misin?');
     if (!confirmDelete) return;
 
     budgetData.expenses.splice(index, 1);
@@ -1092,8 +1110,8 @@ function removeExpense(index) {
 }
 
 function updateExpenseChart() {
-    const chartDom = document.getElementById('expense-chart');
-    if (!chartDom) return;
+    const chartDom = getEl('expense-chart');
+    if (!chartDom || typeof echarts === 'undefined') return;
 
     if (expenseChart) {
         expenseChart.dispose();
@@ -1116,17 +1134,19 @@ function updateExpenseChart() {
         tooltip: {
             trigger: 'item',
             formatter: function (params) {
-                return `${params.name}: ₺${Number(params.value).toLocaleString('tr-TR')} (${params.percent}%)`;
+                return `${params.name}: ${formatTL(params.value)} (${params.percent}%)`;
             }
         },
         legend: {
-            orient: 'vertical',
-            left: 'left'
+            orient: window.innerWidth < 768 ? 'horizontal' : 'vertical',
+            left: window.innerWidth < 768 ? 'center' : 'left',
+            bottom: window.innerWidth < 768 ? 0 : undefined
         },
         series: [{
             name: 'Giderler',
             type: 'pie',
-            radius: ['40%', '70%'],
+            radius: window.innerWidth < 768 ? ['35%', '62%'] : ['40%', '70%'],
+            center: window.innerWidth < 768 ? ['50%', '45%'] : ['55%', '50%'],
             data: chartData
         }]
     });
@@ -1135,32 +1155,22 @@ function updateExpenseChart() {
 }
 
 // =========================
-// HELPERS
+// MODAL / NOTIFICATION
 // =========================
-
-function generateYearlyData(years) {
-    const data = [];
-    const now = new Date();
-
-    for (let i = 0; i <= years; i++) {
-        data.push((now.getFullYear() + i).toString());
-    }
-
-    return data;
-}
-
 function createModal(title, content) {
     const modal = document.createElement('div');
-    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50';
+    modal.className = 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4';
+
     modal.innerHTML = `
-        <div class="bg-white rounded-xl p-8 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-6">
+        <div class="bg-white rounded-xl p-5 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-start gap-4 mb-6">
                 <h2 class="text-2xl font-bold text-gray-900">${title}</h2>
                 <button onclick="closeModal()" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
             </div>
             ${content}
         </div>
     `;
+
     return modal;
 }
 
@@ -1171,9 +1181,17 @@ function closeModal() {
 
 function showNotification(message, type = 'info') {
     const notification = document.createElement('div');
-    const bgColor = type === 'success' ? 'bg-green-500' : type === 'error' ? 'bg-red-500' : 'bg-blue-500';
 
-    notification.className = `fixed top-20 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+    const bgColor =
+        type === 'success'
+            ? 'bg-green-500'
+            : type === 'error'
+                ? 'bg-red-500'
+                : 'bg-blue-500';
+
+    notification.className =
+        `fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg z-50`;
+
     notification.textContent = message;
 
     document.body.appendChild(notification);
@@ -1183,28 +1201,35 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
+// =========================
+// INTERACTIONS
+// =========================
 function initializeInteractions() {
     window.addEventListener('resize', function () {
-        [portfolioChart, simulationChart, riskChart, expenseChart].forEach(chart => {
-            if (chart) chart.resize();
-        });
+        resizeAllCharts();
     });
+
+    window.addEventListener('hashchange', openTabFromHash);
 }
 
 // =========================
 // GLOBAL EXPORTS
 // =========================
-
 window.switchTab = switchTab;
+
 window.addInvestment = addInvestment;
 window.saveInvestment = saveInvestment;
 window.sellInvestment = sellInvestment;
+window.handleAssetTypeChange = handleAssetTypeChange;
+
 window.runSimulation = runSimulation;
 window.resetSimulation = resetSimulation;
+
+window.calculateRiskProfile = calculateRiskProfile;
+
 window.addExpense = addExpense;
 window.saveExpense = saveExpense;
 window.updateBudgetDashboard = updateBudgetDashboard;
-window.closeModal = closeModal;
-window.handleAssetTypeChange = handleAssetTypeChange;
-window.calculateRiskProfile = calculateRiskProfile;
 window.removeExpense = removeExpense;
+
+window.closeModal = closeModal;

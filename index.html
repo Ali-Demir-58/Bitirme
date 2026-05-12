@@ -18,6 +18,11 @@
     <script src="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/js/splide.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@splidejs/splide@4.1.4/dist/css/splide.min.css">
 
+    <!-- DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="resources/favicon.png">
 
@@ -27,6 +32,21 @@
 
         * {
             font-family: 'Inter', sans-serif;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            max-width: 100%;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        img,
+        canvas,
+        svg,
+        table {
+            max-width: 100%;
         }
 
         .gradient-bg {
@@ -50,6 +70,7 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(66, 153, 225, 0.2);
             transition: all 0.3s ease;
+            min-width: 0;
         }
 
         .data-card:hover {
@@ -98,6 +119,8 @@
 
         .market-ticker {
             animation: scroll-left 30s linear infinite;
+            white-space: nowrap;
+            min-width: max-content;
         }
 
         @keyframes scroll-left {
@@ -109,24 +132,75 @@
                 transform: translateX(-100%);
             }
         }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details[open] .mobile-menu-panel {
+            display: block;
+        }
+
+        .mobile-menu-panel {
+            display: none;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 768px) {
+            .hero-bg {
+                min-height: auto;
+                padding-top: 7rem;
+                padding-bottom: 4rem;
+            }
+
+            .hero-bg h1 {
+                font-size: 2.5rem;
+                line-height: 1.15;
+            }
+
+            .hero-bg p {
+                font-size: 1rem;
+                line-height: 1.6;
+            }
+
+            .market-ticker {
+                animation-duration: 18s;
+            }
+
+            .floating-animation {
+                opacity: 0.18;
+            }
+
+            .data-card:hover {
+                transform: none;
+            }
+
+            .dataTables_wrapper {
+                overflow-x: auto;
+            }
+        }
     </style>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 </head>
 
 <body class="bg-gray-50 text-gray-800">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-gray-200">
+    <nav class="fixed top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
             <div class="flex justify-between items-center h-16">
-                <div class="flex items-center space-x-3">
+                <a href="index.html" class="flex items-center space-x-3">
                     <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
-                    <span class="text-xl font-bold text-gray-900">Finansal Analiz</span>
-                </div>
+                    <span class="text-lg sm:text-xl font-bold text-gray-900">Finansal Analiz</span>
+                </a>
+
                 <div class="hidden md:flex space-x-8">
-                    <a href="#" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Anasayfa</a>
+                    <a href="index.html" class="text-blue-600 font-medium transition-colors">Anasayfa</a>
                     <a href="analysis.html"
                         class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Analiz</a>
                     <a href="guide.html"
@@ -134,12 +208,28 @@
                     <a href="iletisim.html"
                         class="text-gray-700 hover:text-blue-600 font-medium transition-colors">İletişim</a>
                 </div>
-                <button class="md:hidden p-2">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M4 6h16M4 12h16M4 18h16"></path>
-                    </svg>
-                </button>
+
+                <!-- Mobile Menu: HTML-only clickable structure -->
+                <details class="md:hidden relative">
+                    <summary class="list-none cursor-pointer p-2 text-gray-700 rounded-lg hover:bg-gray-100"
+                        aria-label="Menüyü aç">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 6h16M4 12h16M4 18h16"></path>
+                        </svg>
+                    </summary>
+
+                    <div
+                        class="mobile-menu-panel absolute right-0 mt-3 w-56 bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden">
+                        <a href="index.html" class="block px-5 py-3 text-blue-600 font-semibold bg-blue-50">Anasayfa</a>
+                        <a href="analysis.html"
+                            class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Analiz</a>
+                        <a href="guide.html"
+                            class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">Rehber</a>
+                        <a href="iletisim.html"
+                            class="block px-5 py-3 text-gray-700 hover:bg-gray-50 hover:text-blue-600 font-medium">İletişim</a>
+                    </div>
+                </details>
             </div>
         </div>
     </nav>
@@ -150,32 +240,35 @@
 
         <!-- Floating Data Elements -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
-            <div class="floating-animation absolute top-20 left-10 text-yellow-400 text-2xl opacity-30">📈</div>
-            <div class="floating-animation absolute top-40 right-20 text-yellow-400 text-xl opacity-30"
+            <div class="floating-animation absolute top-24 left-6 sm:left-10 text-yellow-400 text-2xl opacity-30">📈
+            </div>
+            <div class="floating-animation absolute top-40 right-8 sm:right-20 text-yellow-400 text-xl opacity-30"
                 style="animation-delay: 1s;">💰</div>
-            <div class="floating-animation absolute bottom-40 left-20 text-yellow-400 text-3xl opacity-30"
+            <div class="floating-animation absolute bottom-40 left-8 sm:left-20 text-yellow-400 text-3xl opacity-30"
                 style="animation-delay: 2s;">₺</div>
-            <div class="floating-animation absolute bottom-20 right-10 text-yellow-400 text-2xl opacity-30"
+            <div class="floating-animation absolute bottom-20 right-8 sm:right-10 text-yellow-400 text-2xl opacity-30"
                 style="animation-delay: 0.5s;">📊</div>
         </div>
 
         <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <div class="mb-8">
-                <h1 class="text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
+                <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold text-white mb-6 leading-tight">
                     Kişisel Finans
-                    <span class="text-gradient">Yönetimi</span>
+                    <span class="text-gradient block sm:inline">Yönetimi</span>
                 </h1>
-                <p class="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
+
+                <p class="text-base sm:text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto leading-relaxed">
                     Türk finans piyasalarında harcama davranışlarınızı analiz edin, risk profilinizi belirleyin ve
                     akıllı yatırım kararları alın.
                 </p>
+
                 <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
                     <button onclick="startAnalysis()"
-                        class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg text-lg transition-all transform hover:scale-105 shadow-lg">
+                        class="w-full sm:w-auto bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-bold py-4 px-8 rounded-lg text-base sm:text-lg transition-all transform hover:scale-105 shadow-lg">
                         Ücretsiz Analiz Başlat
                     </button>
                     <button onclick="scrollToMarkets()"
-                        class="border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-4 px-8 rounded-lg text-lg transition-all">
+                        class="w-full sm:w-auto border-2 border-white text-white hover:bg-white hover:text-gray-900 font-bold py-4 px-8 rounded-lg text-base sm:text-lg transition-all">
                         Piyasa Verileri
                     </button>
                 </div>
@@ -185,57 +278,46 @@
 
     <!-- Live Market Ticker -->
     <section class="bg-gray-900 text-white py-3 overflow-hidden">
-        <div class="market-ticker flex items-center space-x-8 whitespace-nowrap">
-
-            <!-- BIST -->
+        <div class="market-ticker flex items-center space-x-8 px-4">
             <span class="flex items-center space-x-2">
                 <span class="font-bold">BIST 100:</span>
                 <span id="bist-value" class="text-green-400">--</span>
-
             </span>
 
-            <!-- USD -->
             <span class="flex items-center space-x-2">
                 <span class="font-bold">USD/TL:</span>
                 <span id="usd-value" class="text-yellow-400">--</span>
-
             </span>
 
-            <!-- EUR -->
             <span class="flex items-center space-x-2">
                 <span class="font-bold">EUR/TL:</span>
                 <span id="eur-value" class="text-yellow-400">--</span>
-
             </span>
 
-            <!-- GOLD -->
             <span class="flex items-center space-x-2">
                 <span class="font-bold">ALTIN:</span>
                 <span id="gold-value" class="text-yellow-400">--</span>
-
             </span>
 
-            <!-- S&P -->
             <span class="flex items-center space-x-2">
-                <span class="font-bold">S&P:</span>
+                <span class="font-bold">S&amp;P:</span>
                 <span id="sp-value" class="text-blue-400">--</span>
-
             </span>
-
         </div>
     </section>
 
     <!-- Market Dashboard -->
-    <section id="markets" class="py-20 bg-white">
+    <section id="markets" class="py-16 sm:py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Canlı Piyasa Verileri</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Canlı Piyasa Verileri</h2>
+                <p class="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
                     Türk finans piyasalarından gerçek zamanlı verilerle yatırım kararlarınızı güncel tutun
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
 
                 <!-- BIST 100 Card -->
                 <div class="data-card rounded-xl p-6">
@@ -243,8 +325,8 @@
                         <h3 class="text-lg font-semibold text-gray-900">BIST 100</h3>
                         <span class="text-2xl">📊</span>
                     </div>
-                    <div class="mb-4">
-                        <div class="text-2xl font-bold text-gray-900" id="bist-card-value">--</div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900 break-words" id="bist-card-value">--</div>
                         <div class="text-sm text-gray-500 font-medium" id="bist-card-change">...</div>
                     </div>
                 </div>
@@ -255,8 +337,8 @@
                         <h3 class="text-lg font-semibold text-gray-900">USD/TL</h3>
                         <span class="text-2xl">💵</span>
                     </div>
-                    <div class="mb-4">
-                        <div class="text-2xl font-bold text-gray-900" id="usd-card-value">--</div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900 break-words" id="usd-card-value">--</div>
                         <div class="text-sm text-gray-500 font-medium" id="usd-card-change">...</div>
                     </div>
                 </div>
@@ -267,8 +349,8 @@
                         <h3 class="text-lg font-semibold text-gray-900">Altın</h3>
                         <span class="text-2xl">🥇</span>
                     </div>
-                    <div class="mb-4">
-                        <div class="text-2xl font-bold text-gray-900" id="gold-card-value">--</div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900 break-words" id="gold-card-value">--</div>
                         <div class="text-sm text-gray-500 font-medium" id="gold-card-change">...</div>
                     </div>
                 </div>
@@ -279,69 +361,59 @@
                         <h3 class="text-lg font-semibold text-gray-900">S&amp;P 500</h3>
                         <span class="text-2xl">🌍</span>
                     </div>
-                    <div class="mb-4">
-                        <div class="text-2xl font-bold text-gray-900" id="sp-card-value">--</div>
+                    <div>
+                        <div class="text-2xl font-bold text-gray-900 break-words" id="sp-card-value">--</div>
                         <div class="text-sm text-gray-500 font-medium" id="sp-card-change">...</div>
                     </div>
                 </div>
-
             </div>
         </div>
     </section>
 
-    <!-- Main Chart
-            <div class="data-card rounded-xl p-6">
-                <div class="flex items-center justify-between mb-6">
-                    <h3 class="text-xl font-bold text-gray-900">Piyasa Performansı</h3>
-                    <div class="flex space-x-2">
-                        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium">1G</button>
-                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">1H</button>
-                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">1A</button>
-                        <button class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg text-sm font-medium">Tümü</button>
-                    </div>
+    <!-- Volatility Table -->
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-xl shadow p-4 sm:p-6">
+                <h3 class="text-xl font-bold mb-4">Piyasa Dalgalanmaları</h3>
+
+                <div class="table-wrapper">
+                    <table id="volatility-table-main" class="min-w-full text-sm display">
+                        <thead class="border-b">
+                            <tr class="text-left text-gray-600">
+                                <th class="py-2">Hisse</th>
+                                <th>Fiyat</th>
+                                <th>Değişim</th>
+                                <th>Volatilite</th>
+                                <th>Risk</th>
+                            </tr>
+                        </thead>
+                        <tbody id="volatility-table">
+                            <!-- JS dolduracak -->
+                        </tbody>
+                    </table>
                 </div>
-                <div id="main-chart" class="h-96"></div>
             </div>
         </div>
-    </section> -->
-
-    <!-- Volatility Table -->
-    <div class="bg-white rounded-xl shadow p-6 mt-10">
-        <h3 class="text-xl font-bold mb-4">Piyasa Dalgalanmaları</h3>
-
-        <div class="overflow-x-auto">
-            <table id="volatility-table-main" class="min-w-full text-sm display">
-                <thead class="border-b">
-                    <tr class="text-left text-gray-600">
-                        <th class="py-2">Hisse</th>
-                        <th>Fiyat</th>
-                        <th>Değişim</th>
-                        <th>Volatilite</th>
-                        <th>Risk</th>
-                    </tr>
-                </thead>
-                <tbody id="volatility-table">
-                    <!-- JS dolduracak -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+    </section>
 
     <!-- Risk Analysis Section -->
-    <section class="py-20 bg-gray-50">
+    <section class="py-16 sm:py-20 bg-gray-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Risk Analizi ve Yatırım Profili</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Risk Analizi ve Yatırım Profili</h2>
+                <p class="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
                     Kişisel risk profilinizi belirleyin, size özel yatırım önerileri alın
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-12 items-center">
                 <div>
-                    <img src="resources/risk-analysis.png" alt="Risk Analizi" class="w-full rounded-xl shadow-lg">
+                    <img src="resources/risk-analysis.png" alt="Risk Analizi"
+                        class="w-full rounded-xl shadow-lg object-cover">
                 </div>
-                <div class="space-y-8">
+
+                <div class="space-y-6 sm:space-y-8">
                     <div class="data-card rounded-xl p-6">
                         <h3 class="text-xl font-bold text-gray-900 mb-4">Risk Profili Testi</h3>
                         <p class="text-gray-600 mb-6">
@@ -370,11 +442,12 @@
     </section>
 
     <!-- Features Section -->
-    <section class="py-20 bg-white">
+    <section class="py-16 sm:py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Neden Finansal Analiz Platformu?</h2>
-                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+
+            <div class="text-center mb-12 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">Neden Finansal Analiz Platformu?</h2>
+                <p class="text-base sm:text-xl text-gray-600 max-w-3xl mx-auto">
                     Türkiye'nin en kapsamlı kişisel finans yönetimi platformu
                 </p>
             </div>
@@ -416,7 +489,7 @@
             <div class="text-center">
                 <div class="flex items-center justify-center space-x-3 mb-4">
                     <img src="resources/favicon.png" alt="Logo" class="w-8 h-8">
-                    <span class="text-xl font-bold">Finansal Analiz Platformu</span>
+                    <span class="text-lg sm:text-xl font-bold">Finansal Analiz Platformu</span>
                 </div>
                 <p class="text-gray-400 mb-6">
                     © 2024 Finansal Analiz Platformu. Tüm hakları saklıdır.
