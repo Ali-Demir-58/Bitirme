@@ -18,7 +18,8 @@ const ALPHA_VANTAGE_KEY = 'DEMO';
 document.addEventListener('DOMContentLoaded', function () {
     initializeAnimations();
     initializeCharts();
-    startDataUpdates();
+    loadExcelMarketData();
+    setInterval(loadExcelMarketData, 5000);
     initializeInteractions();
 });
 
