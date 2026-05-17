@@ -149,7 +149,7 @@ app.get('/api/market-data', (req, res) => {
         const workbook = XLSX.readFile(FILE_PATH);
 
         const data = {
-            stocks: parseStocks(workbook.Sheets['Hisse Senedleri']),
+            stocks: parseStocks(workbook.Sheets['Hisseler']),
             funds: parseFunds(workbook.Sheets['Fon']),
             dollar: parseKeyValue(workbook.Sheets['Dolar']),
             gold: parseKeyValue(workbook.Sheets['Altın']),
