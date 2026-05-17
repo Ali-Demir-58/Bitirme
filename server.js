@@ -150,7 +150,7 @@ app.get('/api/market-data', (req, res) => {
 
         const data = {
             stocks: parseStocks(workbook.Sheets['Hisse Senedleri']),
-            funds: parseFunds(workbook.Sheets['Fon'])
+            funds: parseFunds(workbook.Sheets['Fon']),
             dollar: parseKeyValue(workbook.Sheets['Dolar']),
             gold: parseKeyValue(workbook.Sheets['Altın']),
             euro: parseKeyValue(workbook.Sheets['Euro']),
