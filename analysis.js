@@ -1,5 +1,5 @@
 // Finansal Analiz Platformu - Analysis JavaScript with Supabase Persistence
-// Düzenlenmiş final sürüm: Hisse + Fon + Altın portföy desteği
+// Final sürüm: Hisse + Fon + Altın + Döviz desteği
 
 // =========================
 // GLOBAL STATE
@@ -17,6 +17,8 @@ let analysisUser = null;
 let marketStocks = [];
 let marketFunds = [];
 let marketGoldPrice = null;
+let marketDollarPrice = null;
+let marketEuroPrice = null;
 
 let portfolioData = {
     totalValue: 0,
@@ -152,6 +154,25 @@ function isGoldSymbol(symbol) {
     return s === 'GOLD' || s === 'ALTIN' || s === 'GRAM';
 }
 
+function isFxSymbol(symbol) {
+    const s = normalizeSymbol(symbol);
+    return s === 'USD' || s === 'DOLAR' || s === 'EUR' || s === 'EURO';
+}
+
+function getFxPrice(symbol) {
+    const s = normalizeSymbol(symbol);
+
+    if (s === 'USD' || s === 'DOLAR') {
+        return marketDollarPrice;
+    }
+
+    if (s === 'EUR' || s === 'EURO') {
+        return marketEuroPrice;
+    }
+
+    return null;
+}
+
 // =========================
 // SUPABASE USER DATA
 // =========================
@@ -279,7 +300,18 @@ async function loadMarketDataForAnalysis() {
 
         marketStocks = Array.isArray(data.stocks) ? data.stocks : [];
         marketFunds = Array.isArray(data.funds) ? data.funds : [];
-        marketGoldPrice = data.gold?.['ALIŞ'] ? Number(data.gold['ALIŞ']) : null;
+
+        marketGoldPrice = data.gold?.['ALIŞ']
+            ? Number(data.gold['ALIŞ'])
+            : null;
+
+        marketDollarPrice = data.dollar?.['ALIŞ']
+            ? Number(data.dollar['ALIŞ'])
+            : null;
+
+        marketEuroPrice = data.euro?.['ALIŞ']
+            ? Number(data.euro['ALIŞ'])
+            : null;
 
     } catch (err) {
         console.error('Piyasa verisi alınamadı:', err);
@@ -287,6 +319,8 @@ async function loadMarketDataForAnalysis() {
         marketStocks = [];
         marketFunds = [];
         marketGoldPrice = null;
+        marketDollarPrice = null;
+        marketEuroPrice = null;
     }
 }
 
@@ -314,6 +348,28 @@ function refreshPortfolioPrices() {
                 holding.name = 'Gram Altın';
                 holding.currentPrice = marketGoldPrice;
             }
+            return;
+        }
+
+        if (isFxSymbol(holding.symbol)) {
+            const fxPrice = getFxPrice(holding.symbol);
+
+            if (fxPrice) {
+                const s = normalizeSymbol(holding.symbol);
+
+                if (s === 'USD' || s === 'DOLAR') {
+                    holding.symbol = 'USD';
+                    holding.name = 'Amerikan Doları';
+                }
+
+                if (s === 'EUR' || s === 'EURO') {
+                    holding.symbol = 'EUR';
+                    holding.name = 'Euro';
+                }
+
+                holding.currentPrice = fxPrice;
+            }
+
             return;
         }
 
@@ -508,6 +564,12 @@ function calculatePortfolioMetrics() {
             return;
         }
 
+        if (isFxSymbol(holding.symbol)) {
+            weightedVolatility += weight * 2;
+            weightedMovement += weight * 1;
+            return;
+        }
+
         const marketFund = findMarketFund(holding.symbol);
 
         if (marketFund) {
@@ -650,14 +712,6 @@ function updateHoldingsTable() {
 // ADD / SELL INVESTMENT - SUPABASE
 // =========================
 function addInvestment() {
-    const stockOptions = marketStocks.map(stock => `
-        <option value="${stock.symbol}">${stock.symbol} - ${stock.name}</option>
-    `).join('');
-
-    const fundOptions = marketFunds.map(fund => `
-        <option value="${fund.code}">${fund.code} - ${fund.name}</option>
-    `).join('');
-
     const modal = createModal('Yeni Yatırım Ekle', `
         <form id="investment-form">
             <div class="space-y-4">
@@ -666,20 +720,15 @@ function addInvestment() {
                     <select id="asset-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg" onchange="handleAssetTypeChange()">
                         <option value="stock">Hisse Senedi</option>
                         <option value="gold">Altın</option>
+                        <option value="fx">Döviz</option>
                         <option value="fund">Yatırım Fonu</option>
                     </select>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Sembol/Kod</label>
-                    <input list="asset-symbol-list" type="text" id="asset-symbol" placeholder="Örn: TUPRS veya GOLD" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
-
-                    <datalist id="asset-symbol-list">
-                        ${stockOptions}
-                        ${fundOptions}
-                        <option value="GOLD">GOLD - Gram Altın</option>
-                        <option value="ALTIN">ALTIN - Gram Altın</option>
-                    </datalist>
+                    <input list="asset-symbol-list" type="text" id="asset-symbol" placeholder="Örn: TUPRS, GOLD, USD veya fon kodu" class="w-full px-4 py-2 border border-gray-300 rounded-lg">
+                    <datalist id="asset-symbol-list"></datalist>
                 </div>
 
                 <div>
@@ -705,19 +754,60 @@ function addInvestment() {
     `);
 
     document.body.appendChild(modal);
+    updateAssetSymbolOptions();
 }
 
 function handleAssetTypeChange() {
-    const type = getEl('asset-type')?.value;
     const symbolInput = getEl('asset-symbol');
 
-    if (!symbolInput) return;
+    if (symbolInput) {
+        symbolInput.value = '';
+    }
 
-    symbolInput.value = '';
+    updateAssetSymbolOptions();
 
-    if (type === 'gold') {
+    const type = getEl('asset-type')?.value;
+
+    if (type === 'gold' && symbolInput) {
         symbolInput.value = 'GOLD';
     }
+}
+
+function updateAssetSymbolOptions() {
+    const type = getEl('asset-type')?.value;
+    const datalist = getEl('asset-symbol-list');
+
+    if (!datalist) return;
+
+    let options = '';
+
+    if (type === 'stock') {
+        options = marketStocks.map(stock => `
+            <option value="${stock.symbol}">${stock.symbol} - ${stock.name}</option>
+        `).join('');
+    }
+
+    if (type === 'fund') {
+        options = marketFunds.map(fund => `
+            <option value="${fund.code}">${fund.code} - ${fund.name}</option>
+        `).join('');
+    }
+
+    if (type === 'gold') {
+        options = `
+            <option value="GOLD">GOLD - Gram Altın</option>
+            <option value="ALTIN">ALTIN - Gram Altın</option>
+        `;
+    }
+
+    if (type === 'fx') {
+        options = `
+            <option value="USD">USD - Amerikan Doları</option>
+            <option value="EUR">EUR - Euro</option>
+        `;
+    }
+
+    datalist.innerHTML = options;
 }
 
 async function saveInvestment() {
@@ -741,6 +831,19 @@ async function saveInvestment() {
     if (assetType === 'gold' || isGoldSymbol(symbol)) {
         finalSymbol = 'GOLD';
         assetName = 'Gram Altın';
+    } else if (assetType === 'fx' || isFxSymbol(symbol)) {
+        const s = normalizeSymbol(symbol);
+
+        if (s === 'USD' || s === 'DOLAR') {
+            finalSymbol = 'USD';
+            assetName = 'Amerikan Doları';
+        } else if (s === 'EUR' || s === 'EURO') {
+            finalSymbol = 'EUR';
+            assetName = 'Euro';
+        } else {
+            finalSymbol = symbol;
+            assetName = symbol;
+        }
     } else if (assetType === 'fund') {
         const marketFund = findMarketFund(symbol);
         finalSymbol = marketFund?.code || symbol;
@@ -1648,6 +1751,7 @@ window.addInvestment = addInvestment;
 window.saveInvestment = saveInvestment;
 window.sellInvestment = sellInvestment;
 window.handleAssetTypeChange = handleAssetTypeChange;
+window.updateAssetSymbolOptions = updateAssetSymbolOptions;
 
 window.runSimulation = runSimulation;
 window.resetSimulation = resetSimulation;
