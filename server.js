@@ -120,7 +120,26 @@ function parseIndex(sheet) {
         diff: parseNumber(row['FARK'])
     }));
 }
+function parseFunds(sheet) {
+    if (!sheet) return [];
 
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    return rows.map(row => ({
+        code: String(row['Kod'] || '').trim(),
+        name: String(row['Fonlar'] || '').trim(),
+        price: parseNumber(row['Fiyat']),
+        daily: parseNumber(row['Günlük(%)']),
+        weekly: parseNumber(row['Haftalık(%)']),
+        monthly: parseNumber(row['Aylık(%)']),
+        threeMonth: parseNumber(row['3 Aylık(%)']),
+        sixMonth: parseNumber(row['6 Aylık(%)']),
+        oneYear: parseNumber(row['1 Yıllık(%)']),
+        threeYear: parseNumber(row['3 Yıllık(%)']),
+        fiveYear: parseNumber(row['5 Yıllık(%)']),
+        riskValue: parseNumber(row['Risk Değeri'])
+    }));
+}
 // =========================
 // MARKET DATA API ROUTE
 // =========================
@@ -131,6 +150,7 @@ app.get('/api/market-data', (req, res) => {
 
         const data = {
             stocks: parseStocks(workbook.Sheets['Hisse Senedleri']),
+            funds: parseFunds(workbook.Sheets['Fon'])
             dollar: parseKeyValue(workbook.Sheets['Dolar']),
             gold: parseKeyValue(workbook.Sheets['Altın']),
             euro: parseKeyValue(workbook.Sheets['Euro']),
