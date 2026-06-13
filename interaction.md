@@ -6,7 +6,7 @@
 - **BIST 100 Endeksi**: Gerçek zamanlı fiyat ve değişim yüzdesi
 - **Döviz Kurları**: USD/TL, EUR/TL canlı güncelleme
 - **Emtia Fiyatları**: Altın (GLD), Gümüş (SLV) TL cinsinden
-- **Türk Hisse Senetleri**: ASELS, TUPRS, THYAO gibi popüler hisseler
+- **Hisse Senetleri**: ASELS, TUPRS, THYAO gibi popüler hisseler
 - **Kripto Para Birimleri**: BTC, ETH fiyatları
 
 ### 2. Kişisel Bütçe Takipçisi
