@@ -17,7 +17,7 @@
 - **Euro/TL**: %19,6 reel kayıp
 - **DİBS**: %14,2 reel kayıp
 
-### Türk Yatırımcı Profili ve Davranışları
+### Yatırımcı Profili ve Davranışları
 
 #### Yatırımcı Sayısı ve Dağılım
 - **Toplam Yatırımcı**: 7,1 milyon (Eylül 2024)
