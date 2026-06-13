@@ -1,6 +1,6 @@
-# Türk Finans Piyasaları ve Yatırımcı Davranışları Araştırması
+# Finans Piyasaları ve Yatırımcı Davranışları Araştırması
 
-## 2024 Türk Finans Piyasası Verileri
+## 2024 Finans Piyasası Verileri
 
 ### BIST Performansı 2024
 - **BIST 100**: Yılbaşından Kasım 2024'e kadar %34,94 nominal getiri
